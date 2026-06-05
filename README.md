@@ -68,7 +68,7 @@ L'interfaccia è composta da:
 
 ## Grafo interattivo
 
-![Grafo interattivo](/screenshots/graph.png)
+![Grafo interattivo](public/screenshots/graph.png)
 
 Il **tab Grafo** mostra tutte le note come nodi collegati. Ogni nodo è una mini-card con:
 - **Titolo** della nota
@@ -91,7 +91,7 @@ Clicca un elemento nella **sidebar sinistra** per filtrare il grafo, i risultati
 
 ## Ricerca
 
-![Ricerca testuale](/screenshots/search.png)
+![Ricerca testuale](public/screenshots/search.png)
 
 La barra di ricerca supporta due modalità:
 
@@ -119,7 +119,7 @@ Quando clicchi la barra di ricerca, appare un dropdown con le **ultime 20 ricerc
 
 ## Domande all'AI (RAG)
 
-![Chat AI con fonti](/screenshots/ai-chat.png)
+![Chat AI con fonti](public/screenshots/ai-chat.png)
 
 La modalità AI permette di fare domande in linguaggio naturale sulle tue note. L'AI risponde in italiano, citando le fonti.
 
@@ -154,7 +154,7 @@ Quando visualizzi una nota, trovi il pulsante **"Riassumi"** nell'header del pan
 
 ## Visualizzare una nota
 
-![Nota aperta nel NoteSheet](/screenshots/note-sheet.png)
+![Nota aperta nel NoteSheet](public/screenshots/note-sheet.png)
 
 Clicca una nota dal grafo, dai risultati di ricerca, o da una fonte AI per aprirla nel **pannello laterale** (NoteSheet).
 
@@ -194,7 +194,7 @@ Clicca l'icona ⚙️ nell'header per aprire il dialog delle impostazioni, divis
 
 ### Tab "Note"
 
-![Impostazioni - Note](/screenshots/settings-notes.png)
+![Impostazioni - Note](public/screenshots/settings-notes.png)
 
 | Campo | Descrizione | Esempio |
 |-------|-------------|---------|
@@ -213,7 +213,7 @@ Dopo aver modificato le impostazioni, clicca **"Salva e re-indicizza"** per appl
 
 ### Tab "Intelligenza Artificiale"
 
-![Impostazioni - AI](/screenshots/settings-ai.png)
+![Impostazioni - AI](public/screenshots/settings-ai.png)
 
 | Campo | Descrizione |
 |-------|-------------|
@@ -252,7 +252,7 @@ Se esiste un file `.env.local` con variabili configurate (es. `OPENROUTER_API_KE
 
 ## Statistiche
 
-![Dashboard statistiche](/screenshots/statistics.png)
+![Dashboard statistiche](public/screenshots/statistics.png)
 
 Il **tab Statistiche** mostra una dashboard con:
 

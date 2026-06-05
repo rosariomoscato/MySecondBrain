@@ -29,7 +29,7 @@ export function DocsViewer() {
       return `<h${depth} id="${id}">${text}</h${depth}>`;
     };
     marked.setOptions({ renderer });
-    return marked.parse(markdown) as string;
+    return marked.parse(markdown.replace(/public\//g, "/")) as string;
   }, [markdown]);
 
   const handleClick = (e: React.MouseEvent) => {
