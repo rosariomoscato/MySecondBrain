@@ -1,5 +1,5 @@
 {
-  "source": "..",
+  "source": "notes",
   "pattern": "UpNote_*",
   "filesDir": "Files",
   "appName": "My Second Brain",
