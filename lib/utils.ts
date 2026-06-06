@@ -14,6 +14,71 @@ export interface ExternalLink {
   domain: string
 }
 
+export interface VideoMeta {
+  platform: "youtube" | "vimeo"
+  id: string
+  embedUrl: string
+  thumbnailUrl: string
+}
+
+export function parseVideoMeta(url: string): VideoMeta | null {
+  try {
+    const u = new URL(url)
+    const host = u.hostname.toLowerCase()
+
+    if (host === "youtu.be") {
+      const id = u.pathname.slice(1)
+      if (!id) return null
+      return {
+        platform: "youtube",
+        id,
+        embedUrl: `https://www.youtube.com/embed/${id}`,
+        thumbnailUrl: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+      }
+    }
+
+    if (host === "www.youtube.com" || host === "youtube.com") {
+      const id = u.searchParams.get("v")
+      if (id) {
+        return {
+          platform: "youtube",
+          id,
+          embedUrl: `https://www.youtube.com/embed/${id}`,
+          thumbnailUrl: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+        }
+      }
+      const shortsMatch = u.pathname.match(/^\/shorts\/([a-zA-Z0-9_-]+)/)
+      if (shortsMatch) {
+        const id = shortsMatch[1]
+        return {
+          platform: "youtube",
+          id,
+          embedUrl: `https://www.youtube.com/embed/${id}`,
+          thumbnailUrl: `https://img.youtube.com/vi/${id}/hqdefault.jpg`,
+        }
+      }
+      return null
+    }
+
+    if (host === "www.vimeo.com" || host === "vimeo.com") {
+      const id = u.pathname.split("/").filter(Boolean)[0]
+      if (id && /^\d+$/.test(id)) {
+        return {
+          platform: "vimeo",
+          id,
+          embedUrl: `https://player.vimeo.com/video/${id}`,
+          thumbnailUrl: `https://vumbnail.com/${id}.jpg`,
+        }
+      }
+      return null
+    }
+
+    return null
+  } catch {
+    return null
+  }
+}
+
 function classifyLink(url: string): ExternalLinkType {
   const host = (() => {
     try {

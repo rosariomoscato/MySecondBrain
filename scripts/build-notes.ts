@@ -94,8 +94,8 @@ function stripHtml(html: string): string {
     .replace(/&nbsp;/g, " ")
     .replace(/==([^=]+)==/g, "$1")
     .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
     .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+    .replace(/\[([^\]]+)\]\((?!https?:\/\/)([^)]+)\)/g, "$1")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }

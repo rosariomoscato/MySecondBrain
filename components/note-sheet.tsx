@@ -5,8 +5,8 @@ import { motion } from "framer-motion";
 import { Note } from "@/lib/types";
 import { Separator } from "@/components/ui/separator";
 import { marked } from "marked";
-import { FileText, Image, Paperclip, X, ChevronRight, Link2, Download, FileDown, FileType, Sparkles, FileSignature, ExternalLink as ExternalLinkIcon, Globe, Video, FileQuestion } from "lucide-react";
-import { extractExternalLinks, type ExternalLink, type ExternalLinkType } from "@/lib/utils";
+import { FileText, Image, Paperclip, X, ChevronRight, Link2, Download, FileDown, FileType, Sparkles, FileSignature, ExternalLink as ExternalLinkIcon, Globe, Video, FileQuestion, Play } from "lucide-react";
+import { extractExternalLinks, parseVideoMeta, type ExternalLink, type ExternalLinkType } from "@/lib/utils";
 
 function exportAsMarkdown(note: Note) {
   const meta = [`# ${note.title}`, "", `**Categoria:** ${note.category.replace(/_/g, " ")}`];
@@ -90,6 +90,62 @@ function getLinkTypeIcon(type: ExternalLinkType) {
     default:
       return <Globe className="h-3.5 w-3.5 text-sky-400" />;
   }
+}
+
+function VideoEmbed({ link }: { link: ExternalLink }) {
+  const meta = parseVideoMeta(link.url)
+  const [expanded, setExpanded] = useState(false)
+
+  if (!meta) {
+    return (
+      <a
+        href={link.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-2.5 text-xs px-3 py-2 rounded-lg bg-primary/10 text-primary/70 border border-primary/10 hover:bg-primary/15 hover:text-primary transition-colors"
+      >
+        {getLinkTypeIcon(link.type)}
+        <span className="truncate font-medium">{link.displayText}</span>
+        <span className="shrink-0 text-[10px] text-muted-foreground/40">{link.domain}</span>
+      </a>
+    )
+  }
+
+  if (expanded) {
+    return (
+      <div className="rounded-xl overflow-hidden border border-border/40 bg-black">
+        <iframe
+          src={meta.embedUrl}
+          className="w-full aspect-video"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowFullScreen
+          title={link.displayText}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <button
+      onClick={() => setExpanded(true)}
+      className="w-full relative rounded-xl overflow-hidden border border-border/40 group cursor-pointer"
+    >
+      <img
+        src={meta.thumbnailUrl}
+        alt={link.displayText}
+        className="w-full aspect-video object-cover"
+      />
+      <div className="absolute inset-0 bg-black/30 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+        <div className="h-12 w-12 rounded-full bg-white/90 group-hover:bg-white flex items-center justify-center shadow-lg transition-colors">
+          <Play className="h-5 w-5 text-rose-500 ml-0.5" fill="currentColor" />
+        </div>
+      </div>
+      <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/70 to-transparent px-3 py-2">
+        <p className="text-xs text-white/90 truncate font-medium">{link.displayText}</p>
+        <p className="text-[10px] text-white/50">{meta.platform === "youtube" ? "YouTube" : "Vimeo"}</p>
+      </div>
+    </button>
+  )
 }
 
 function highlightHtml(html: string, query: string): string {
@@ -412,28 +468,32 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
                         <ExternalLinkIcon className="h-3.5 w-3.5" />
                         Link esterni ({externalLinks.length})
                       </p>
-                      <div className="space-y-1">
-                        {externalLinks.map((link, i) => (
-                          <a
-                            key={i}
-                            href={link.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2.5 text-xs px-3 py-2 rounded-lg bg-primary/10 text-primary/70 border border-primary/10 hover:bg-primary/15 hover:text-primary transition-colors"
-                          >
-                            {getLinkTypeIcon(link.type)}
-                            <div className="min-w-0 flex-1 flex items-center gap-2">
-                              <img
-                                src={`https://www.google.com/s2/favicons?domain=${link.domain}&sz=16`}
-                                alt=""
-                                className="h-3.5 w-3.5 shrink-0 rounded-sm"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                              />
-                              <span className="truncate font-medium">{link.displayText}</span>
-                            </div>
-                            <span className="shrink-0 text-[10px] text-muted-foreground/40">{link.domain}</span>
-                          </a>
-                        ))}
+                      <div className="space-y-2">
+                        {externalLinks.map((link, i) =>
+                          link.type === "video" ? (
+                            <VideoEmbed key={i} link={link} />
+                          ) : (
+                            <a
+                              key={i}
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-2.5 text-xs px-3 py-2 rounded-lg bg-primary/10 text-primary/70 border border-primary/10 hover:bg-primary/15 hover:text-primary transition-colors"
+                            >
+                              {getLinkTypeIcon(link.type)}
+                              <div className="min-w-0 flex-1 flex items-center gap-2">
+                                <img
+                                  src={`https://www.google.com/s2/favicons?domain=${link.domain}&sz=16`}
+                                  alt=""
+                                  className="h-3.5 w-3.5 shrink-0 rounded-sm"
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                />
+                                <span className="truncate font-medium">{link.displayText}</span>
+                              </div>
+                              <span className="shrink-0 text-[10px] text-muted-foreground/40">{link.domain}</span>
+                            </a>
+                          )
+                        )}
                       </div>
                     </div>
                   </>
