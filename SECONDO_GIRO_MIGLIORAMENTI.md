@@ -8,7 +8,7 @@ Leggimi prima di ogni sessione per decidere cosa implementare.
 
 - [x] **Link esterni dedicati** — estrarre URL `http(s)://` dal contenuto delle note e mostrarli in una sezione "Link esterni" nel NoteSheet (siti, video YouTube, PDF online, ecc.), con favicon o icona per tipo (video, sito, documento)
 - [x] **Embed video** — riconoscere URL YouTube/Vimeo nel contenuto e renderizzarli come embed player cliccabili o con thumbnail preview
-- [ ] **Anteprima immagini nel contenuto** — gli allegati immagine vengono solo elencati come link; renderizzarli come anteprime inline nel contenuto markdown della nota
+- [x] **Anteprima immagini nel contenuto** — gli allegati immagine vengono solo elencati come link; renderizzarli come anteprime inline nel contenuto markdown della nota
 
 ## Grafo
 

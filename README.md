@@ -1,6 +1,6 @@
 # My Second Brain — Guida Utente
 
-Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo, ricerca full-text e Q&A AI con citazioni delle fonti.
+Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo, ricerca full-text, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon.
 
 ---
 
@@ -162,9 +162,12 @@ Clicca una nota dal grafo, dai risultati di ricerca, o da una fonte AI per aprir
 
 - **Header** con titolo, categoria (badge colorato) e pulsanti azione
 - **Contenuto** renderizzato in markdown reale (titoli, liste, link, codice, tabelle)
-- **Allegati** — immagini e file collegati alla nota
-- **Collegamenti** — link ad altre note (cliccabili)
-- **Note correlate** — suggerimenti automatici di note simili
+- **Anteprime immagini** — le immagini allegate vengono renderizzate inline nel contenuto della nota
+- **Link esterni** — gli URL http(s):// vengono estratti e mostrati in una sezione dedicata con:
+  - Favicon del sito e icona per tipo (sito, video, documento)
+  - **Embed video** — i link YouTube/Vimeo mostrano una thumbnail con pulsante play; al click si espande nel player embed
+- **Allegati** — file non immagine collegati alla nota
+- **Note correlate** — suggerimenti automatici di note simili basati su backlink, link condivisi e categoria
 - **Breadcrumb** — trail di navigazione quando segui collegamenti tra note
 
 ### Azioni disponibili

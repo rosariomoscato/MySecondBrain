@@ -94,7 +94,11 @@ function stripHtml(html: string): string {
     .replace(/&nbsp;/g, " ")
     .replace(/==([^=]+)==/g, "$1")
     .replace(/\*\*([^*]+)\*\*/g, "$1")
-    .replace(/!\[[^\]]*\]\([^)]+\)/g, "")
+    .replace(/!\[([^\]]*)\]\(Files\/([^)]+)\)/g, (_, alt: string, src: string) => {
+      const decoded = decodeURIComponent(src);
+      const encoded = encodeURIComponent(decoded);
+      return "![" + alt + "](/files/" + encoded + ")";
+    })
     .replace(/\[([^\]]+)\]\((?!https?:\/\/)([^)]+)\)/g, "$1")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
@@ -230,7 +234,19 @@ function applyRenames(notes: Note[], renameMap: Map<string, string>): void {
   if (renameMap.size === 0) return;
   for (const note of notes) {
     note.attachments = note.attachments.map((a) => renameMap.get(a) || a);
+    for (const [orig, renamed] of renameMap.entries()) {
+      const encodedOrig = encodeURIComponent(orig);
+      const encodedRenamed = encodeURIComponent(renamed);
+      note.content = note.content.replace(
+        new RegExp(`/files/${escapeRegex(encodedOrig)}`, "g"),
+        `/files/${encodedRenamed}`
+      );
+    }
   }
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function main() {

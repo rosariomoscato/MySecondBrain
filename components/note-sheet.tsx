@@ -525,38 +525,6 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
                   </>
                 )}
 
-                {note.links.length > 0 && (
-                  <>
-                    <Separator className="my-4 opacity-20" />
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground/30">Collegamenti</p>
-                      <div className="flex flex-wrap gap-2">
-                        {note.links.map((link, i) => {
-                          let displayTitle = link;
-                          if (displayTitle.startsWith("#")) {
-                            const pipeIdx = displayTitle.indexOf(" | ");
-                            if (pipeIdx >= 0) {
-                              displayTitle = displayTitle.substring(pipeIdx + 3);
-                            } else {
-                              displayTitle = displayTitle.substring(1);
-                            }
-                          }
-                          displayTitle = displayTitle.replace(/\\_/g, "_");
-                          return (
-                            <button
-                              key={i}
-                              onClick={() => onLinkClick(link)}
-                              className="text-xs px-2.5 py-1 rounded-md bg-muted text-muted-foreground border hover:bg-accent hover:text-foreground transition-colors cursor-pointer"
-                            >
-                              {displayTitle}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </>
-                )}
-
                 {relatedNotes.length > 0 && (
                   <>
                     <Separator className="my-4 opacity-20" />

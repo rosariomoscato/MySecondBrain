@@ -94,11 +94,11 @@ function classifyLink(url: string): ExternalLinkType {
 }
 
 function cleanUrl(url: string): string {
-  return url.replace(/\\_/g, "_")
+  return url.replace(/\\([_()])/g, "$1");
 }
 
 function cleanDisplayText(text: string): string {
-  let cleaned = text.replace(/\\_/g, "_")
+  let cleaned = text.replace(/\\([_()])/g, "$1")
   cleaned = cleaned.replace(/^https?:\/\/(www\.)?/i, "")
   if (cleaned.length > 60) {
     cleaned = cleaned.substring(0, 57) + "..."
