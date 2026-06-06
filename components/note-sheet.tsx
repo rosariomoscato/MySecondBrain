@@ -5,7 +5,8 @@ import { motion } from "framer-motion";
 import { Note } from "@/lib/types";
 import { Separator } from "@/components/ui/separator";
 import { marked } from "marked";
-import { FileText, Image, Paperclip, X, ChevronRight, Link2, Download, FileDown, FileType, Sparkles, FileSignature } from "lucide-react";
+import { FileText, Image, Paperclip, X, ChevronRight, Link2, Download, FileDown, FileType, Sparkles, FileSignature, ExternalLink as ExternalLinkIcon, Globe, Video, FileQuestion } from "lucide-react";
+import { extractExternalLinks, type ExternalLink, type ExternalLinkType } from "@/lib/utils";
 
 function exportAsMarkdown(note: Note) {
   const meta = [`# ${note.title}`, "", `**Categoria:** ${note.category.replace(/_/g, " ")}`];
@@ -80,6 +81,17 @@ function getFileIcon(filename: string) {
   return <FileText className="h-3.5 w-3.5" />;
 }
 
+function getLinkTypeIcon(type: ExternalLinkType) {
+  switch (type) {
+    case "video":
+      return <Video className="h-3.5 w-3.5 text-rose-400" />;
+    case "document":
+      return <FileQuestion className="h-3.5 w-3.5 text-amber-400" />;
+    default:
+      return <Globe className="h-3.5 w-3.5 text-sky-400" />;
+  }
+}
+
 function highlightHtml(html: string, query: string): string {
   if (!query || query.trim().length < 2) return html;
   const escaped = query.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -93,9 +105,24 @@ function highlightHtml(html: string, query: string): string {
     .join("");
 }
 
+function stripExternalRefLines(text: string): string {
+  return text
+    .split("\n")
+    .filter((line) => {
+      const trimmed = line.trim();
+      if (/^Riferiment[oi]:?\s*$/i.test(trimmed)) return false;
+      if (/^\[.*?\]\(https?:\/\/[^\s)]+\)\s*$/.test(trimmed)) return false;
+      if (/^https?:\/\/\S+\s*$/.test(trimmed)) return false;
+      if (/^\[#.*?\]\(%23.*?\)\s*$/.test(trimmed)) return false;
+      if (/^#[A-Za-z_]+(\s*\|\s*.+)?$/.test(trimmed)) return false;
+      return true;
+    })
+    .join("\n");
+}
+
 function NoteContent({ content, onLinkClick, highlightQuery }: { content: string; onLinkClick: (title: string) => void; highlightQuery?: string }) {
   const html = useMemo(() => {
-    const cleaned = content.replace(/\\_/g, "_");
+    const cleaned = stripExternalRefLines(content).replace(/\\_/g, "_");
     const renderer = new marked.Renderer();
     renderer.link = function ({ href, text }) {
       if (href.startsWith("#") || href.startsWith("%23")) {
@@ -221,6 +248,8 @@ function SummaryCard({ summary, isStreaming, onDismiss }: { summary: string; isS
 export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbClick, onLinkClick, relatedNotes, highlightQuery }: NoteSheetProps) {
   const [summary, setSummary] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
+
+  const externalLinks = useMemo(() => note ? extractExternalLinks(note.content) : [], [note?.id]);
 
   useEffect(() => {
     if (open) {
@@ -374,6 +403,41 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
                   />
                 )}
                 <NoteContent content={note.content} onLinkClick={onLinkClick} highlightQuery={highlightQuery} />
+
+                {externalLinks.length > 0 && (
+                  <>
+                    <Separator className="my-4 opacity-20" />
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium text-muted-foreground/50 flex items-center gap-1.5">
+                        <ExternalLinkIcon className="h-3.5 w-3.5" />
+                        Link esterni ({externalLinks.length})
+                      </p>
+                      <div className="space-y-1">
+                        {externalLinks.map((link, i) => (
+                          <a
+                            key={i}
+                            href={link.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2.5 text-xs px-3 py-2 rounded-lg bg-primary/10 text-primary/70 border border-primary/10 hover:bg-primary/15 hover:text-primary transition-colors"
+                          >
+                            {getLinkTypeIcon(link.type)}
+                            <div className="min-w-0 flex-1 flex items-center gap-2">
+                              <img
+                                src={`https://www.google.com/s2/favicons?domain=${link.domain}&sz=16`}
+                                alt=""
+                                className="h-3.5 w-3.5 shrink-0 rounded-sm"
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                              />
+                              <span className="truncate font-medium">{link.displayText}</span>
+                            </div>
+                            <span className="shrink-0 text-[10px] text-muted-foreground/40">{link.domain}</span>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
 
                 {note.attachments.length > 0 && (
                   <>
