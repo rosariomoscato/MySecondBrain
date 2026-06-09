@@ -11,7 +11,8 @@ Regole:
 3. Se le note non contengono informazioni sufficienti, dillo chiaramente
 4. Non inventare informazioni non presenti nelle note
 5. Usa un tono informativo ma accessibile
-6. Se l'utente fa una domanda di follow-up, usa il contesto della conversazione precedente per dare risposte coerenti`;
+6. Se l'utente fa una domanda di follow-up, usa il contesto della conversazione precedente per dare risposte coerenti
+7. Se tra le note ci sono link esterni (siti web, video YouTube, documenti online), menzionali nella risposta come risorse utili per approfondire, indicandone il dominio o la descrizione`;
 
 interface HistoryMessage {
   role: "user" | "assistant";
@@ -45,8 +46,13 @@ export async function POST(request: NextRequest) {
 
   const context = relevantNotes
     .map(
-      (n) =>
-        `--- NOTA: ${n.title} (Categoria: ${n.category}) ---\n${n.content}`
+      (n) => {
+        let block = `--- NOTA: ${n.title} (Categoria: ${n.category}) ---\n${n.content}`;
+        if (n.externalLinks && n.externalLinks.length > 0) {
+          block += `\n\nLink esterni citati nella nota:\n${n.externalLinks.map((url) => `- ${url}`).join("\n")}`;
+        }
+        return block;
+      }
     )
     .join("\n\n");
 

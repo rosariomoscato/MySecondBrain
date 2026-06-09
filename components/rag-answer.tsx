@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from "react";
 import { Note, ChatMessage } from "@/lib/types";
-import { Sparkles, Send, Plus, User, ChevronDown, ChevronUp, ExternalLink, Download } from "lucide-react";
+import { Sparkles, Send, Plus, User, ChevronDown, ChevronUp, ExternalLink, Download, Globe, Video } from "lucide-react";
 import { marked } from "marked";
 
 interface RagChatProps {
@@ -145,12 +145,13 @@ export function RagChat({
                 </div>
 
                 {!msg.isStreaming && msg.sourceIds && msg.sourceIds.length > 0 && (
-                  <div className="px-4 pb-3 space-y-1.5">
-                    {msg.sourceIds
-                      .map((id) => getNoteById(id))
-                      .filter(Boolean)
-                      .filter((n, i, arr) => arr.findIndex((x) => x?.id === n?.id) === i)
-                      .map((note) => {
+                  <>
+                    <div className="px-4 pb-3 space-y-1.5">
+                      {msg.sourceIds
+                        .map((id) => getNoteById(id))
+                        .filter(Boolean)
+                        .filter((n, i, arr) => arr.findIndex((x) => x?.id === n?.id) === i)
+                        .map((note) => {
                         const nid = note!.id;
                         const isExpanded = expandedSources.has(nid);
                         return (
@@ -210,7 +211,65 @@ export function RagChat({
                           </div>
                         );
                       })}
-                  </div>
+                    </div>
+                    {(() => {
+                      const allExternalLinks: { url: string; noteTitle: string }[] = [];
+                      const seenUrls = new Set<string>();
+                      for (const id of msg.sourceIds || []) {
+                        const note = getNoteById(id);
+                        if (note?.externalLinks) {
+                          for (const url of note.externalLinks) {
+                            if (!seenUrls.has(url)) {
+                              seenUrls.add(url);
+                              allExternalLinks.push({ url, noteTitle: note.title });
+                            }
+                          }
+                        }
+                      }
+                      if (allExternalLinks.length === 0) return null;
+                      return (
+                        <div className="px-4 pb-3">
+                          <p className="text-[10px] text-muted-foreground/50 mb-1.5 flex items-center gap-1">
+                            <Globe className="h-3 w-3" />
+                            Risorse esterne
+                          </p>
+                          <div className="space-y-1">
+                            {allExternalLinks.slice(0, 6).map(({ url }) => {
+                              let domain = "";
+                              let isVideo = false;
+                              try {
+                                const u = new URL(url);
+                                domain = u.hostname.replace(/^www\./, "");
+                                isVideo = /^(youtube\.com|youtu\.be|vimeo\.com)/.test(domain);
+                              } catch { domain = url; }
+                              return (
+                                <a
+                                  key={url}
+                                  href={url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 text-xs text-muted-foreground/70 hover:text-cyan-400 px-2 py-1 rounded-md hover:bg-cyan-500/10 transition-colors group"
+                                >
+                                  {isVideo ? (
+                                    <Video className="h-3 w-3 text-red-400/60 shrink-0" />
+                                  ) : (
+                                    <Globe className="h-3 w-3 text-muted-foreground/40 shrink-0" />
+                                  )}
+                                  <span className="truncate">{domain}</span>
+                                  <ExternalLink className="h-2.5 w-2.5 opacity-0 group-hover:opacity-60 transition-opacity ml-auto shrink-0" />
+                                </a>
+                              );
+                            })}
+                            {allExternalLinks.length > 6 && (
+                              <span className="text-[10px] text-muted-foreground/30">
+                                +{allExternalLinks.length - 6} altri link
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </>
                 )}
               </div>
             )}

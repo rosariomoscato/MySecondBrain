@@ -15,6 +15,8 @@ Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza ar
   - [Filtri avanzati](#filtri-avanzati)
 - [Ricerca](#ricerca)
 - [Domande all'AI (RAG)](#domande-allai-rag)
+  - [Sorgenti espandibili](#sorgenti-espandibili)
+  - [Risorse esterne](#risorse-esterne)
 - [Visualizzare una nota](#visualizzare-una-nota)
 - [Impostazioni](#impostazioni)
 - [Keyboard shortcuts](#keyboard-shortcuts)
@@ -174,6 +176,13 @@ Sotto ogni risposta AI trovi le **fonti citate**. Clicca una fonte per espanderl
 - **Snippet** del contenuto (300 caratteri)
 - **Leggi tutto** — apre la nota completa nel pannello laterale
 - **Apri nel grafo** — passa al tab Grafo, zooma e seleziona il nodo corrispondente
+
+### Risorse esterne
+
+Se le note fonte contengono link esterni (siti web, video YouTube, documenti), questi appaiono in una sezione dedicata sotto le fonti. L'AI può anche menzionare questi link nella risposta come riferimenti per approfondire.
+
+- Icona **globo** per siti web, icona **video** (rossa) per YouTube/Vimeo
+- Clicca un link per aprirlo in una nuova scheda del browser
 
 ### Riassunto nota
 
