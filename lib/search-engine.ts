@@ -8,6 +8,7 @@ const FUSE_CONFIG_BASE = {
     { name: "category", weight: 1 },
     { name: "content", weight: 1 },
     { name: "links", weight: 1.5 },
+    { name: "tags", weight: 2 },
   ],
   includeScore: true,
   minMatchCharLength: 2,
@@ -65,6 +66,45 @@ export function searchNotes(query: string, limit = 10, category?: string): Searc
       snippet,
     };
   });
+}
+
+export function searchByTag(tag: string, limit = 20): SearchResult[] {
+  if (!tag || tag.trim().length < 2) return [];
+  const notes = loadNotes();
+  const tagLower = tag.toLowerCase().trim();
+
+  return notes
+    .filter((note) => {
+      const tagMatch = note.tags?.some((t) => t.toLowerCase().includes(tagLower));
+      const contentMatch = note.content.toLowerCase().includes(tagLower);
+      const titleMatch = note.title.toLowerCase().includes(tagLower);
+      return tagMatch || (titleMatch && contentMatch);
+    })
+    .slice(0, limit)
+    .map((note) => {
+      const idx = note.content.toLowerCase().indexOf(tagLower);
+      const start = Math.max(0, idx - 100);
+      const end = Math.min(note.content.length, idx + tag.length + 200);
+      const snippet =
+        (start > 0 ? "..." : "") +
+        note.content.slice(start, end) +
+        (end < note.content.length ? "..." : "");
+      return { item: note, score: 0, snippet };
+    });
+}
+
+export function getAllTags(): { tag: string; count: number }[] {
+  const notes = loadNotes();
+  const tagMap = new Map<string, number>();
+  for (const note of notes) {
+    for (const tag of note.tags || []) {
+      const key = tag.toLowerCase();
+      tagMap.set(key, (tagMap.get(key) || 0) + 1);
+    }
+  }
+  return [...tagMap.entries()]
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count);
 }
 
 export function getRelevantNotes(query: string, limit = 8, category?: string): Note[] {

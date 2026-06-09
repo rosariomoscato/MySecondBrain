@@ -8,6 +8,7 @@ export interface Note {
   links: string[];
   attachments: string[];
   externalLinks: string[];
+  tags: string[];
   date: string;
   created: string;
 }

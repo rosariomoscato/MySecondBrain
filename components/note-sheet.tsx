@@ -398,6 +398,21 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
                 >
                   #{note.category.replace(/_/g, " ")}
                 </span>
+                {note.tags && note.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-0.5">
+                    {note.tags.slice(0, 8).map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-[10px] px-1.5 py-0.5 rounded bg-muted/50 text-muted-foreground border border-border/30"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {note.tags.length > 8 && (
+                      <span className="text-[10px] text-muted-foreground/50">+{note.tags.length - 8}</span>
+                    )}
+                  </div>
+                )}
                 <h2 className="text-base font-medium text-foreground truncate">{note.title}</h2>
                 {note.date && (
                   <p className="text-xs text-muted-foreground">Data: {note.date}</p>

@@ -160,6 +160,43 @@ function extractAttachments(content: string): string[] {
   return [...new Set(attachments)];
 }
 
+function extractTags(content: string): string[] {
+  const tags = new Set<string>();
+
+  const boldPattern = /\*\*([^*]{3,50})\*\*/g;
+  let match;
+  while ((match = boldPattern.exec(content)) !== null) {
+    const text = match[1]
+      .replace(/==/g, "")
+      .replace(/[_]/g, " ")
+      .trim();
+    if (text.length >= 3 && text.length <= 50 && /^[a-zA-ZÀ-ÿ\s]/.test(text)) {
+      tags.add(text);
+    }
+  }
+
+  const h3Pattern = /^###\s+(.+)$/gm;
+  while ((match = h3Pattern.exec(content)) !== null) {
+    const text = match[1].replace(/[*_=`#]/g, "").trim();
+    if (text.length >= 3 && text.length <= 60) {
+      tags.add(text);
+    }
+  }
+
+  const conceptsMatch = content.match(/(?:Concetti|Argomenti|Keyword|Tag)[:\s]*\n([\s\S]*?)(?:\n\n|\n#|\n<br|$)/i);
+  if (conceptsMatch) {
+    const items = conceptsMatch[1].split(/\n/);
+    for (const item of items) {
+      const text = item.replace(/^[-*•]\s*/, "").replace(/[*_=`#]/g, "").trim();
+      if (text.length >= 3 && text.length <= 60) {
+        tags.add(text);
+      }
+    }
+  }
+
+  return [...tags].slice(0, 20);
+}
+
 function extractTitle(content: string, fileName: string): string {
   const titleMatch = content.match(/^##\s+\S+\s*\|\s*(.+)$/m);
   if (titleMatch) return titleMatch[1].trim();
@@ -184,6 +221,7 @@ function processNotesFromDir(notesDir: string): Note[] {
     const links = extractLinks(content);
     const attachments = extractAttachments(content);
     const externalLinks = extractExternalLinks(content);
+    const tags = extractTags(content);
 
     notes.push({
       id: slugify(title),
@@ -195,6 +233,7 @@ function processNotesFromDir(notesDir: string): Note[] {
       links,
       attachments,
       externalLinks,
+      tags,
       date: frontmatter.date || "",
       created: frontmatter.created || "",
     });

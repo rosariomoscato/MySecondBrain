@@ -1,6 +1,6 @@
 # My Second Brain — Guida Utente
 
-Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo con nodi per link esterni e filtri avanzati, ricerca full-text, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon.
+Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo con nodi per link esterni e filtri avanzati, ricerca full-text con tag, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon.
 
 ---
 
@@ -126,7 +126,7 @@ La barra di ricerca supporta due modalità:
 
 ### Modalità Testo 🔍
 
-Ricerca full-text fuzzy su titolo, contenuto e collegamenti delle note. I risultati mostrano:
+Ricerca full-text fuzzy su titolo, contenuto, collegamenti e **tag** delle note. I tag hanno peso elevato nella ricerca, quindi le note con tag corrispondenti appaiono in cima ai risultati. I risultati mostrano:
 - Titolo della nota con categoria
 - Snippet con il contesto del match evidenziato
 - Score di rilevanza
@@ -189,8 +189,9 @@ Clicca una nota dal grafo, dai risultati di ricerca, o da una fonte AI per aprir
 
 ### Contenuto del pannello
 
-- **Header** con titolo, categoria (badge colorato) e pulsanti azione
+- **Header** con titolo, categoria (badge colorato), **tag estratti** e pulsanti azione
 - **Contenuto** renderizzato in markdown reale (titoli, liste, link, codice, tabelle)
+- **Tag** — keyword e argomenti estratti automaticamente dal contenuto (parole in grassetto, sottotitoli, sezioni "Concetti"), mostrati come etichette sotto la categoria
 - **Anteprime immagini** — le immagini allegate vengono renderizzate inline nel contenuto della nota
 - **Link esterni** — gli URL http(s):// vengono estratti e mostrati in una sezione dedicata con:
   - Favicon del sito e icona per tipo (sito, video, documento)
@@ -381,7 +382,7 @@ MySecondBrain/
 ├── lib/
 │   ├── settings.ts            ← Gestione impostazioni
 │   ├── notes-loader.ts        ← Caricamento note
-│   └── search-engine.ts       ← Motore di ricerca
+│   └── search-engine.ts       ← Motore di ricerca (fuse.js + tag search)
 ├── scripts/
 │   └── build-notes.ts         ← Build note markdown → JSON
 ├── notes/                     ← Note sorgenti (gitignorato)
