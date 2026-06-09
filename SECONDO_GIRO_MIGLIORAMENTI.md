@@ -12,7 +12,7 @@ Leggimi prima di ogni sessione per decidere cosa implementare.
 
 ## Grafo
 
-- [ ] **Nodi per link esterni** — mostrare nel grafo anche i link a siti/video come nodi di tipo diverso (es. quadrati grigi o icone distinte), per mappare visivamente le risorse esterne citate
+- [x] **Nodi per link esterni** — mostrare nel grafo anche i link a siti/video come nodi di tipo diverso (es. quadrati grigi o icone distinte), per mappare visivamente le risorse esterne citate
 - [ ] **Filtri avanzati nel grafo** — filtro per data, per numero di collegamenti, per note con/senza allegati
 
 ## Ricerca & AI

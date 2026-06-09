@@ -114,6 +114,32 @@ function extractLinks(content: string): string[] {
   return [...new Set(links)];
 }
 
+function extractExternalLinks(content: string): string[] {
+  const urls: string[] = [];
+  const seen = new Set<string>();
+
+  const inlineRe = /\[([^\]]*)\]\((https?:\/\/[^\s)]+)\)/g;
+  let match;
+  while ((match = inlineRe.exec(content)) !== null) {
+    const url = match[2].replace(/\\([_()])/g, "$1");
+    if (!seen.has(url)) {
+      seen.add(url);
+      urls.push(url);
+    }
+  }
+
+  const bareRe = /(?<![(\[/\w])https?:\/\/[^\s<>")\]]+/g;
+  while ((match = bareRe.exec(content)) !== null) {
+    const url = match[0].replace(/[.,;:!?\)}\]]+$/, "").replace(/\\([_()])/g, "$1");
+    if (!seen.has(url)) {
+      seen.add(url);
+      urls.push(url);
+    }
+  }
+
+  return urls;
+}
+
 function extractAttachments(content: string): string[] {
   const attachments: string[] = [];
 
@@ -157,6 +183,7 @@ function processNotesFromDir(notesDir: string): Note[] {
     const cleanContent = stripHtml(content);
     const links = extractLinks(content);
     const attachments = extractAttachments(content);
+    const externalLinks = extractExternalLinks(content);
 
     notes.push({
       id: slugify(title),
@@ -167,6 +194,7 @@ function processNotesFromDir(notesDir: string): Note[] {
       filePath: file,
       links,
       attachments,
+      externalLinks,
       date: frontmatter.date || "",
       created: frontmatter.created || "",
     });

@@ -7,6 +7,7 @@ export interface Note {
   filePath: string;
   links: string[];
   attachments: string[];
+  externalLinks: string[];
   date: string;
   created: string;
 }

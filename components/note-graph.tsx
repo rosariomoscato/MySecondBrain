@@ -48,6 +48,13 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
     x: number;
     y: number;
   } | null>(null);
+  const [extTooltip, setExtTooltip] = useState<{
+    domain: string;
+    url: string;
+    type: string;
+    x: number;
+    y: number;
+  } | null>(null);
 
   const isDark = resolvedTheme === "dark";
 
@@ -142,6 +149,55 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
     const noteIdSet = new Set(notes.map((n) => n.id));
     const noteMap = new Map(notes.map((n) => [n.id, n]));
     const addedLinks = new Set<string>();
+
+    const externalUrlMap = new Map<string, { domain: string; type: string }>();
+    for (const note of notes) {
+      for (const url of note.externalLinks) {
+        if (!externalUrlMap.has(url)) {
+          try {
+            const u = new URL(url);
+            const host = u.hostname.toLowerCase().replace(/^www\./, "");
+            const isVideo = /^(youtube\.com|youtu\.be|vimeo\.com|dailymotion\.com|twitch\.tv)/.test(host);
+            externalUrlMap.set(url, { domain: host, type: isVideo ? "video" : "site" });
+          } catch {
+            externalUrlMap.set(url, { domain: url, type: "site" });
+          }
+        }
+      }
+    }
+
+    const urlToExtIdMap = new Map<string, string>();
+    let extCounter = 0;
+    const urlToExtId = (url: string) => {
+      if (urlToExtIdMap.has(url)) return urlToExtIdMap.get(url)!;
+      const id = `ext_${extCounter++}`;
+      urlToExtIdMap.set(url, id);
+      return id;
+    };
+
+    for (const [url, meta] of externalUrlMap.entries()) {
+      const id = urlToExtId(url);
+      const isVideo = meta.type === "video";
+      const extColor = isVideo ? "#ef4444" : "#64748b";
+      visNodes.push({
+        id,
+        label: meta.domain.replace(/\.(com|org|net|it|io|dev)/, "").slice(0, 20),
+        group: "external",
+        color: {
+          background: isDark ? "#1e293b" : "#f1f5f9",
+          border: extColor,
+          highlight: { background: isDark ? "#334155" : "#e2e8f0", border: "#fff" },
+          hover: { background: isDark ? "#334155" : "#e2e8f0", border: "#fff" },
+        },
+        font: { size: 8, color: isDark ? "#94a3b8" : "#64748b" },
+        size: 8,
+        shape: isVideo ? "diamond" : "square",
+        borderWidth: 2,
+        margin: { top: 4, bottom: 4, left: 4, right: 4 },
+        shadow: { enabled: true, color: `${extColor}30`, size: 4 },
+        shapeProperties: { borderRadius: isVideo ? 0 : 4 },
+      });
+    }
     for (const note of notes) {
       for (const rawLink of note.links) {
         let linkTitle = rawLink;
@@ -175,6 +231,19 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
             });
           }
         }
+      }
+    }
+
+    for (const note of notes) {
+      for (const url of note.externalLinks) {
+        const extId = urlToExtId(url);
+        visEdges.push({
+          from: note.id,
+          to: extId,
+          dashes: [2, 4],
+          color: { color: isDark ? "#334155" : "#cbd5e1", highlight: "#94a3b8", hover: "#64748b" },
+          width: 0.5,
+        });
       }
     }
 
@@ -231,11 +300,31 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
               y: canvasPoint.y,
             });
           }
+        } else if (params.node.startsWith("ext_")) {
+          for (const [url, meta] of externalUrlMap.entries()) {
+            const extId = urlToExtId(url);
+            if (extId === params.node) {
+              const canvasRect = containerRef.current?.getBoundingClientRect();
+              const pos = network.getPositions([params.node])[params.node];
+              if (canvasRect && pos) {
+                const canvasPoint = network.canvasToDOM({ x: pos.x, y: pos.y });
+                setExtTooltip({
+                  domain: meta.domain,
+                  url,
+                  type: meta.type,
+                  x: canvasPoint.x,
+                  y: canvasPoint.y,
+                });
+              }
+              break;
+            }
+          }
         }
       });
 
       network.on("blurNode", () => {
         setTooltip(null);
+        setExtTooltip(null);
       });
 
       network.on("click", (params: { nodes: string[] }) => {
@@ -243,6 +332,14 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
           const nodeId = params.nodes[0];
           if (noteIdSet.has(nodeId)) {
             onNodeClick(nodeId);
+          } else if (nodeId.startsWith("ext_")) {
+            for (const [url] of externalUrlMap.entries()) {
+              const extId = urlToExtId(url);
+              if (extId === nodeId) {
+                window.open(url, "_blank", "noopener,noreferrer");
+                break;
+              }
+            }
           }
         }
       });
@@ -314,6 +411,37 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
                   </span>
                 )}
               </div>
+            </div>
+          </div>
+        )}
+        {extTooltip && (
+          <div
+            className="absolute z-50 pointer-events-none"
+            style={{
+              left: extTooltip.x,
+              top: extTooltip.y - 20,
+              transform: "translate(-50%, -100%)",
+            }}
+          >
+            <div className="rounded-xl p-3 max-w-[250px] shadow-xl border border-border/50 bg-popover/95 backdrop-blur-xl">
+              <div className="flex items-center gap-2 mb-1.5">
+                <span
+                  className="text-[10px] px-2 py-0.5 rounded-full border"
+                  style={{
+                    borderColor: extTooltip.type === "video" ? "#ef444450" : "#64748b50",
+                    color: extTooltip.type === "video" ? "#ef4444" : "#64748b",
+                    backgroundColor: extTooltip.type === "video" ? "#ef444410" : "#64748b10",
+                  }}
+                >
+                  {extTooltip.type === "video" ? "Video" : "Sito"}
+                </span>
+              </div>
+              <p className="font-semibold text-sm text-foreground mb-1">
+                {extTooltip.domain}
+              </p>
+              <p className="text-[10px] text-muted-foreground truncate">
+                {extTooltip.url}
+              </p>
             </div>
           </div>
         )}
