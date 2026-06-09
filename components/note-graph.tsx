@@ -240,7 +240,7 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
         visEdges.push({
           from: note.id,
           to: extId,
-          dashes: [2, 4],
+          dashes: true,
           color: { color: isDark ? "#334155" : "#cbd5e1", highlight: "#94a3b8", hover: "#64748b" },
           width: 0.5,
         });

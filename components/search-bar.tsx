@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { Search, Sparkles, FileText, Clock, Trash2, X } from "lucide-react";
+import { Search, Sparkles, FileText, Clock, Trash2, X, Brain } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SearchMode } from "@/lib/types";
@@ -31,7 +31,11 @@ export function SearchBar({ onSearch, isLoading, value, onChange, searchHistory,
       }
       if (e.key === "Tab" && document.activeElement?.getAttribute("data-search-input") !== null && !value) {
         e.preventDefault();
-        setMode((m) => (m === "text" ? "rag" : "text"));
+        setMode((m) => {
+            if (m === "text") return "semantic";
+            if (m === "semantic") return "rag";
+            return "text";
+          });
       }
     }
     window.addEventListener("keydown", handleKeyDown);
@@ -89,6 +93,8 @@ export function SearchBar({ onSearch, isLoading, value, onChange, searchHistory,
           placeholder={
             mode === "text"
               ? "Cerca nelle tue note..."
+              : mode === "semantic"
+              ? "Cerca per significato..."
               : "Chiedi alle tue note..."
           }
           className="pl-11 h-12 text-base bg-background/60 border-border rounded-xl placeholder:text-muted-foreground/50 transition-all duration-300"
@@ -157,6 +163,19 @@ export function SearchBar({ onSearch, isLoading, value, onChange, searchHistory,
         <Sparkles className="h-5 w-5" />
       </button>
 
+      <button
+        type="button"
+        onClick={() => setMode("semantic")}
+        className={`h-12 w-12 shrink-0 inline-flex items-center justify-center rounded-xl border transition-all duration-300 ${
+          mode === "semantic"
+            ? "bg-purple-500/15 border-purple-500/30 text-purple-600 dark:text-purple-300 shadow-sm dark:shadow-lg dark:shadow-purple-500/20"
+            : "bg-background/40 border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+        }`}
+        title="Ricerca semantica"
+      >
+        <Brain className="h-5 w-5" />
+      </button>
+
       <Button
         type="submit"
         disabled={isLoading || !value.trim()}
@@ -165,12 +184,17 @@ export function SearchBar({ onSearch, isLoading, value, onChange, searchHistory,
         {isLoading ? (
           <span className="flex items-center gap-2">
             <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-            {mode === "rag" ? "Penso..." : "Cercando..."}
+            {mode === "rag" ? "Penso..." : mode === "semantic" ? "Analizzo..." : "Cercando..."}
           </span>
         ) : mode === "rag" ? (
           <span className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
             Chiedi
+          </span>
+        ) : mode === "semantic" ? (
+          <span className="flex items-center gap-2">
+            <Brain className="h-4 w-4" />
+            Cerca
           </span>
         ) : (
           <span className="flex items-center gap-2">

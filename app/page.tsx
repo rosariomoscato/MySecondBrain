@@ -36,6 +36,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("graph");
   const [lastQuery, setLastQuery] = useState("");
   const [isRebuilding, setIsRebuilding] = useState(false);
+  const [isEmbedding, setIsEmbedding] = useState(false);
   const [notesVersion, setNotesVersion] = useState(0);
   const [focusedResultIndex, setFocusedResultIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
@@ -132,6 +133,28 @@ export default function Home() {
       // ignore
     }
     setIsRebuilding(false);
+  }, []);
+
+  const handleGenerateEmbeddings = useCallback(async () => {
+    setIsEmbedding(true);
+    try {
+      const res = await fetch("/api/embed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "generate" }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        window.alert(`Errore: ${data.error}`);
+      } else if (data.generated > 0) {
+        window.alert(`Generati ${data.generated} embeddings (${data.total} totali). Ricerca semantica pronta!`);
+      } else {
+        window.alert(`Tutti i ${data.total} embeddings sono già aggiornati.`);
+      }
+    } catch {
+      window.alert("Errore di connessione durante la generazione degli embeddings.");
+    }
+    setIsEmbedding(false);
   }, []);
 
   const handleNoteClick = useCallback((noteId: string) => {
@@ -340,6 +363,23 @@ export default function Home() {
           setSearchResults([]);
         }
         setIsLoading(false);
+      } else if (mode === "semantic") {
+        setActiveTab("results");
+        setChatMessages([]);
+        try {
+          const body: Record<string, string> = { action: "search", query };
+          if (selectedCategory) body.category = selectedCategory;
+          const res = await fetch("/api/embed", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          });
+          const data = await res.json();
+          setSearchResults(data.results || []);
+        } catch {
+          setSearchResults([]);
+        }
+        setIsLoading(false);
       } else {
         setActiveTab("results");
         setSearchResults([]);
@@ -380,6 +420,14 @@ export default function Home() {
           <div className="flex-1">
             <SearchBar onSearch={handleSearch} isLoading={isLoading} value={searchQuery} onChange={setSearchQuery} searchHistory={searchHistory} onAddHistory={addHistory} onRemoveHistory={removeHistory} onClearHistory={clearHistory} />
           </div>
+          <button
+            onClick={handleGenerateEmbeddings}
+            disabled={isEmbedding}
+            className="h-10 w-10 inline-flex items-center justify-center rounded-xl bg-background/40 border border-border text-muted-foreground hover:text-foreground hover:bg-accent transition-all duration-300 disabled:opacity-40"
+            title="Genera embeddings (ricerca semantica)"
+          >
+            <Brain className={`h-4 w-4 ${isEmbedding ? "animate-pulse" : ""}`} />
+          </button>
           <button
             onClick={handleRebuild}
             disabled={isRebuilding}

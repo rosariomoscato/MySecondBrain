@@ -19,7 +19,7 @@ Leggimi prima di ogni sessione per decidere cosa implementare.
 
 - [x] **Ricerca per tag/keyword** — oltre alla categoria, supportare tag estratti dal frontmatter o dal contenuto delle note
 - [x] **Risposte AI con link esterni** — il prompt RAG include anche gli URL esterni estratti, arricchendo le risposte con riferimenti a fonti web
-- [ ] **Ricerca semantica** — sostituire/affiancare fuse.js con embeddings (es. via API OpenRouter) per ricerca per significato, non solo per testo
+- [x] **Ricerca semantica** — sostituire/affiancare fuse.js con embeddings (es. via API OpenRouter) per ricerca per significato, non solo per testo
 
 ## UX
 

@@ -21,7 +21,7 @@ export interface ChatMessage {
   isStreaming?: boolean;
 }
 
-export type SearchMode = "text" | "rag";
+export type SearchMode = "text" | "rag" | "semantic";
 
 export interface SearchResult {
   item: Note;

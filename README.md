@@ -1,6 +1,6 @@
 # My Second Brain — Guida Utente
 
-Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo con nodi per link esterni e filtri avanzati, ricerca full-text con tag, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon.
+Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo con nodi per link esterni e filtri avanzati, ricerca full-text con tag, **ricerca semantica per significato**, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon.
 
 ---
 
@@ -14,7 +14,9 @@ Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza ar
   - [Filtrare per categoria](#filtrare-per-categoria)
   - [Filtri avanzati](#filtri-avanzati)
 - [Ricerca](#ricerca)
-- [Domande all'AI (RAG)](#domande-allai-rag)
+  - [Ricerca testuale](#ricerca-testuale)
+  - [Ricerca semantica](#ricerca-semantica)
+  - [Domande all'AI (RAG)](#domande-allai-rag)
   - [Sorgenti espandibili](#sorgenti-espandibili)
   - [Risorse esterne](#risorse-esterne)
 - [Visualizzare una nota](#visualizzare-una-nota)
@@ -65,9 +67,10 @@ L'interfaccia è composta da:
 ### Header (da sinistra a destra)
 
 - **Barra di ricerca** — digita per cercare o chiedere all'AI
+- **🧠 Genera embeddings** — genera gli embeddings per la ricerca semantica
 - **⟳ Aggiorna note** — re-indicizza le note dalla cartella sorgente
 - **⚙️ Impostazioni** — configura cartella note e modello AI
-- **TemA chiaro/scuro** — cambia tema
+- **Tema chiaro/scuro** — cambia tema
 - **📖 Guida** — apre questa documentazione
 
 ---
@@ -122,33 +125,38 @@ I filtri si combinano tra loro e con il filtro per categoria. Il contatore delle
 
 ## Ricerca
 
+La barra di ricerca supporta **tre modalità**, selezionabili con i pulsanti accanto alla barra:
+
+| Pulsante | Modalità | Icona | Colore |
+|----------|----------|-------|--------|
+| **Ricerca testuale** | Fuse.js | FileText | Default |
+| **Ricerca semantica** | Embeddings AI | Brain | Viola |
+| **Chiedi all'AI** | RAG | Sparkles | Ciano |
+
+Cambia modalità cliccando il pulsante corrispondente, oppure premi **Tab** mentre la barra di ricerca è attiva per ciclare tra le tre.
+
+### Ricerca testuale
+
 ![Ricerca testuale](public/screenshots/search.png)
 
-La barra di ricerca supporta due modalità:
-
-### Modalità Testo 🔍
-
-Ricerca full-text fuzzy su titolo, contenuto, collegamenti e **tag** delle note. I tag hanno peso elevato nella ricerca, quindi le note con tag corrispondenti appaiono in cima ai risultati. I risultati mostrano:
+Ricerca full-text fuzzy (Fuse.js) su titolo, contenuto, collegamenti e **tag** delle note. I tag hanno peso elevato, quindi le note con tag corrispondenti appaiono in cima. I risultati mostrano:
 - Titolo della nota con categoria
 - Snippet con il contesto del match evidenziato
 - Score di rilevanza
 
-### Modalità AI 🤖
+**Ideale per**: trovare note che contengono parole o frasi specifiche.
 
-Fai una domanda in linguaggio naturale. L'AI risponde basandosi esclusivamente sulle tue note, citando le fonti. Vedi la sezione [Domande all'AI](#domande-allai-rag) per i dettagli.
+### Ricerca semantica
 
-### Cambiare modalità
+Ricerca per **significato** tramite embeddings AI (modello `openai/text-embedding-3-small` via OpenRouter). Ogni nota viene trasformata in un vettore numerico (1536 dimensioni) che ne cattura il significato semantico. La query viene anch'essa trasformata in vettore e confrontata con tutte le note tramite cosine similarity.
 
-- Clicca il toggle **🔍 Testo / 🤖 AI** nella barra di ricerca
-- Oppure premi **Tab** mentre la barra di ricerca è attiva
+**Prima volta**: clicca il pulsante **Brain** nell'header per generare gli embeddings. L'operazione richiede qualche secondo e usa la stessa API key OpenRouter configurata nelle Impostazioni. Gli embeddings vengono salvati in `data/embeddings.json` e riutilizzati nelle ricerche successive.
 
-### Cronologia ricerche
+**Esempio**: cercando "pericoli della tecnologia" la ricerca testuale trova note che contengono la parola "tecnologia", mentre quella semantica trova anche note che parlano di rischi tecnologici senza usare quelle parole esatte — come "Le tre leggi della robotica" o "20 secondi per uccidere: lo decide la macchina".
 
-Quando clicchi la barra di ricerca, appare un dropdown con le **ultime 20 ricerche**. Inizia a digitare per filtrare la cronologia. Clicca una voce per rilanciarla, o la **X** per rimuoverla.
+**Ideale per**: esplorare concetti, trovare note per argomento anche se non ricordi le parole esatte.
 
----
-
-## Domande all'AI (RAG)
+### Domande all'AI (RAG)
 
 ![Chat AI con fonti](public/screenshots/ai-chat.png)
 
@@ -187,6 +195,10 @@ Se le note fonte contengono link esterni (siti web, video YouTube, documenti), q
 ### Riassunto nota
 
 Quando visualizzi una nota, trovi il pulsante **"Riassumi"** nell'header del pannello. L'AI genera un riassunto conciso (5-6 righe) della nota, mostrato in una card dedicata con streaming in tempo reale.
+
+### Cronologia ricerche
+
+Quando clicchi la barra di ricerca, appare un dropdown con le **ultime 20 ricerche**. Inizia a digitare per filtrare la cronologia. Clicca una voce per rilanciarla, o la **X** per rimuoverla. La cronologia è condivisa tra tutte le modalità di ricerca.
 
 ---
 
@@ -285,7 +297,7 @@ Se esiste un file `.env.local` con variabili configurate (es. `OPENROUTER_API_KE
 | Tasto | Azione |
 |-------|--------|
 | `/` | Focus sulla barra di ricerca |
-| `Tab` | Nella barra di ricerca: cambia modalità (Testo ↔ AI) |
+| `Tab` | Nella barra di ricerca: cambia modalità (Testo → Semantica → AI) |
 | `Esc` | Chiude il pannello nota |
 | `↑` `↓` | Naviga tra i risultati di ricerca |
 | `Enter` | Apri la nota selezionata nei risultati |
@@ -323,6 +335,7 @@ Apri [http://localhost:3000](http://localhost:3000). Il comando `npm run dev` es
 - **ShadCN UI** + **Tailwind CSS v4**
 - **vis-network** — grafo interattivo
 - **fuse.js** — ricerca fuzzy
+- **OpenAI text-embedding-3-small** — embeddings per ricerca semantica (via OpenRouter)
 - **Vercel AI SDK** — integrazione LLM con streaming
 - **framer-motion** — animazioni
 - **marked** — rendering markdown
@@ -377,6 +390,7 @@ MySecondBrain/
 │   └── api/
 │       ├── ask/route.ts       ← RAG endpoint
 │       ├── search/route.ts    ← Ricerca fuse.js
+│       ├── embed/route.ts     ← Ricerca semantica (embeddings)
 │       ├── summarize/route.ts ← Riassunto AI
 │       ├── rebuild/route.ts   ← Re-index
 │       └── settings/          ← API impostazioni
@@ -391,12 +405,14 @@ MySecondBrain/
 ├── lib/
 │   ├── settings.ts            ← Gestione impostazioni
 │   ├── notes-loader.ts        ← Caricamento note
-│   └── search-engine.ts       ← Motore di ricerca (fuse.js + tag search)
+│   ├── search-engine.ts       ← Motore di ricerca (fuse.js + tag search)
+│   └── embeddings.ts          ← Embeddings AI (generazione, cache, cosine similarity)
 ├── scripts/
 │   └── build-notes.ts         ← Build note markdown → JSON
 ├── notes/                     ← Note sorgenti (gitignorato)
 ├── data/
 │   ├── notes.json             ← Note indicizzate (generato)
+│   ├── embeddings.json        ← Embeddings per ricerca semantica (generato)
 │   └── settings.json          ← Impostazioni utente (generato)
 └── public/
     └── files/                 ← Allegati copiati dal build (generato)
