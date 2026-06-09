@@ -1,6 +1,6 @@
 # My Second Brain — Guida Utente
 
-Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo, ricerca full-text, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon.
+Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo con nodi per link esterni e filtri avanzati, ricerca full-text, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon.
 
 ---
 
@@ -9,6 +9,10 @@ Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza ar
 - [Primo avvio](#primo-avvio)
 - [L'interfaccia](#linterfaccia)
 - [Grafo interattivo](#grafo-interattivo)
+  - [Tipi di nodi](#tipi-di-nodi)
+  - [Interazioni](#interazioni)
+  - [Filtrare per categoria](#filtrare-per-categoria)
+  - [Filtri avanzati](#filtri-avanzati)
 - [Ricerca](#ricerca)
 - [Domande all'AI (RAG)](#domande-allai-rag)
 - [Visualizzare una nota](#visualizzare-una-nota)
@@ -75,10 +79,21 @@ Il **tab Grafo** mostra tutte le note come nodi collegati. Ogni nodo è una mini
 - **Anteprima** del contenuto (primi 80 caratteri)
 - **Bordo colorato** per categoria
 
+### Tipi di nodi
+
+Il grafo include tre tipi di nodi:
+
+| Tipo | Forma | Colore | Descrizione |
+|------|-------|--------|-------------|
+| **Nota** | Box arrotondato | Bordo colorato per categoria | Le tue note markdown |
+| **Sito web** | Quadrato piccolo | Grigio | Link a siti esterni citati nelle note |
+| **Video** | Diamante piccolo | Rosso | Link a YouTube/Vimeo citati nelle note |
+
 ### Interazioni
 
-- **Clicca** un nodo per aprire la nota nel pannello laterale
-- **Passa il mouse** su un nodo per vedere un tooltip con titolo, categoria e abstract
+- **Clicca** un nodo nota per aprirla nel pannello laterale
+- **Clicca** un nodo sito/video per aprirlo nel browser
+- **Passa il mouse** su un nodo per vedere un tooltip con dettagli (titolo, categoria, abstract per le note; dominio e URL per i link esterni)
 - **Trascina** i nodi per riorganizzare il grafo
 - **Scroll** per zoom in/out
 - **Clicca una categoria** nella sidebar per filtrare e mostrare solo le note di quella categoria
@@ -86,6 +101,20 @@ Il **tab Grafo** mostra tutte le note come nodi collegati. Ogni nodo è una mini
 ### Filtrare per categoria
 
 Clicca un elemento nella **sidebar sinistra** per filtrare il grafo, i risultati di ricerca e le risposte AI. Un chip colorato appare sotto i tab per indicare il filtro attivo. Clicca la **X** sul chip per rimuovere il filtro.
+
+### Filtri avanzati
+
+Sopra il grafo trovi il pulsante **Filtri** che apre un pannello con controlli avanzati:
+
+![Filtri avanzati grafo](public/screenshots/graph-filters.png)
+
+| Filtro | Descrizione |
+|--------|-------------|
+| **Collegamenti minimi** | Slider per mostrare solo note con almeno N link interni ad altre note |
+| **Allegati** | Filtra per note con o senza file allegati (Tutti / Con / Senza) |
+| **Link esterni** | Filtra per note che citano o meno risorse web esterne (Tutti / Con / Senza) |
+
+I filtri si combinano tra loro e con il filtro per categoria. Il contatore delle note visibili si aggiorna in tempo reale. Usa **Reset** per ripristinare tutti i filtri.
 
 ---
 
@@ -344,6 +373,7 @@ MySecondBrain/
 ├── components/
 │   ├── settings-dialog.tsx    ← Dialog impostazioni
 │   ├── note-graph.tsx         ← Grafo vis-network
+│   ├── graph-filters.tsx      ← Filtri avanzati grafo
 │   ├── note-sheet.tsx         ← Pannello nota
 │   ├── search-bar.tsx         ← Barra di ricerca
 │   ├── rag-answer.tsx         ← Chat AI + fonti

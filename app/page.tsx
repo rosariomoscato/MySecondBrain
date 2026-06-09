@@ -18,6 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Brain, Network, RefreshCw, X, BarChart3, Settings, HelpCircle, BookOpen } from "lucide-react";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { DocsViewer } from "@/components/docs-viewer";
+import { GraphFilters, DEFAULT_FILTERS, type GraphFiltersState } from "@/components/graph-filters";
 import { useSearchHistory } from "@/hooks/use-search-history";
 
 const allNotes = loadNotes();
@@ -39,6 +40,7 @@ export default function Home() {
   const [focusedResultIndex, setFocusedResultIndex] = useState(-1);
   const [searchQuery, setSearchQuery] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [graphFilters, setGraphFilters] = useState<GraphFiltersState>(DEFAULT_FILTERS);
   const graphRef = useRef<NoteGraphHandle>(null);
   const { history: searchHistory, add: addHistory, remove: removeHistory, clear: clearHistory } = useSearchHistory();
 
@@ -55,6 +57,29 @@ export default function Home() {
     : null;
 
   const currentNotes = notesVersion >= 0 ? filteredNotes : filteredNotes;
+
+  const maxLinksInNotes = useMemo(
+    () => Math.max(...allNotes.map((n) => n.links.length), 0),
+    []
+  );
+
+  const graphFilteredNotes = useMemo(() => {
+    let result = currentNotes;
+    if (graphFilters.minLinks > 0) {
+      result = result.filter((n) => n.links.length >= graphFilters.minLinks);
+    }
+    if (graphFilters.hasAttachments === "yes") {
+      result = result.filter((n) => n.attachments.length > 0);
+    } else if (graphFilters.hasAttachments === "no") {
+      result = result.filter((n) => n.attachments.length === 0);
+    }
+    if (graphFilters.hasExternalLinks === "yes") {
+      result = result.filter((n) => (n.externalLinks?.length ?? 0) > 0);
+    } else if (graphFilters.hasExternalLinks === "no") {
+      result = result.filter((n) => (n.externalLinks?.length ?? 0) === 0);
+    }
+    return result;
+  }, [currentNotes, graphFilters]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -437,8 +462,20 @@ export default function Home() {
             </div>
 
             <TabsContent value="graph" className="flex-1 min-h-0 mt-0 px-6 pb-6">
-              <div className="h-full rounded-xl border border-indigo-500/10">
-                <NoteGraph ref={graphRef} notes={filteredNotes} onNodeClick={handleNoteClick} />
+              <div className="h-full flex flex-col rounded-xl border border-indigo-500/10 overflow-hidden">
+                <div className="shrink-0 px-3 py-2 border-b border-indigo-500/10 bg-background/30 flex items-center gap-3">
+                  <GraphFilters
+                    active={graphFilters}
+                    onChange={setGraphFilters}
+                    maxLinks={maxLinksInNotes}
+                  />
+                  <span className="text-[10px] text-muted-foreground/40">
+                    {graphFilteredNotes.length} note
+                  </span>
+                </div>
+                <div className="flex-1 min-h-0">
+                  <NoteGraph ref={graphRef} notes={graphFilteredNotes} onNodeClick={handleNoteClick} />
+                </div>
               </div>
             </TabsContent>
 
