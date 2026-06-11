@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useCallback, useMemo, useEffect, useRef } from "react";
-import { loadNotes, getCategories, getNoteById, getRelatedNotes } from "@/lib/notes-loader";
-import { SearchResult, Note, SearchMode, ChatMessage } from "@/lib/types";
+import { loadNotes, getRelatedNotes as _getRelatedNotes } from "@/lib/notes-loader";
+import { SearchResult, Note, SearchMode, ChatMessage, CATEGORY_COLORS } from "@/lib/types";
 import { SearchBar } from "@/components/search-bar";
 import { SearchResults } from "@/components/search-results";
 import { RagChat } from "@/components/rag-answer";
@@ -22,10 +22,49 @@ import { GraphFilters, DEFAULT_FILTERS, type GraphFiltersState } from "@/compone
 import { useSearchHistory } from "@/hooks/use-search-history";
 import { useFavorites } from "@/hooks/use-favorites";
 
-const allNotes = loadNotes();
-const categories = getCategories();
+const initialNotes = loadNotes();
 
 export default function Home() {
+  const [allNotes, setAllNotes] = useState<Note[]>(initialNotes);
+  const categories = useMemo(() => {
+    const catMap = new Map<string, { count: number; color: string }>();
+    for (const n of allNotes) {
+      const existing = catMap.get(n.category);
+      if (existing) {
+        existing.count++;
+      } else {
+        catMap.set(n.category, { count: 1, color: n.categoryColor });
+      }
+    }
+    return Array.from(catMap.entries()).map(([name, data]) => ({
+      name,
+      count: data.count,
+      color: data.color,
+    }));
+  }, [allNotes]);
+
+  const refreshNotes = useCallback(async () => {
+    try {
+      const res = await fetch("/api/notes");
+      if (res.ok) {
+        const data = await res.json();
+        setAllNotes(data);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const getNoteByIdLocal = useCallback(
+    (id: string) => allNotes.find((n) => n.id === id),
+    [allNotes]
+  );
+
+  const getRelatedNotesLocal = useCallback(
+    (note: Note, limit = 5) => _getRelatedNotes(note, limit),
+    []
+  );
+
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -47,7 +86,7 @@ export default function Home() {
   const [showFavorites, setShowFavorites] = useState(false);
   const graphRef = useRef<NoteGraphHandle>(null);
   const { history: searchHistory, add: addHistory, remove: removeHistory, clear: clearHistory } = useSearchHistory();
-  const { favorites, toggle: toggleFavorite, isFavorite } = useFavorites();
+  const { favorites, toggle: toggleFavorite, isFavorite, loaded: favoritesLoaded } = useFavorites();
 
   const filteredNotes = showFavorites
     ? allNotes.filter((n) => favorites.has(n.id))
@@ -123,8 +162,8 @@ export default function Home() {
 
   const relatedNotes = useMemo(() => {
     if (!selectedNote) return [];
-    return getRelatedNotes(selectedNote, 5);
-  }, [selectedNote]);
+    return getRelatedNotesLocal(selectedNote, 5);
+  }, [selectedNote, getRelatedNotesLocal]);
 
   const handleRebuild = useCallback(async () => {
     setIsRebuilding(true);
@@ -164,13 +203,13 @@ export default function Home() {
   }, []);
 
   const handleNoteClick = useCallback((noteId: string) => {
-    const note = getNoteById(noteId);
+    const note = getNoteByIdLocal(noteId);
     if (note) {
       setSelectedNote(note);
       setNoteHistory([note]);
       setSheetOpen(true);
     }
-  }, []);
+  }, [getNoteByIdLocal]);
 
   const handleLinkClick = useCallback((linkTitle: string) => {
     let title = linkTitle;
@@ -199,13 +238,13 @@ export default function Home() {
       });
       setSelectedNote(note);
     }
-  }, []);
+  }, [allNotes]);
 
   const handleBreadcrumbClick = useCallback((noteId: string) => {
     setNoteHistory((prev) => prev.slice(0, prev.findIndex((n) => n.id === noteId) + 1));
-    const note = getNoteById(noteId);
+    const note = getNoteByIdLocal(noteId);
     if (note) setSelectedNote(note);
-  }, []);
+  }, [getNoteByIdLocal]);
 
   const handleSheetClose = useCallback((open: boolean) => {
     setSheetOpen(open);
@@ -416,7 +455,7 @@ export default function Home() {
           totalNotes={allNotes.length}
           selectedCategory={selectedCategory}
           onCategoryClick={(cat) => { setSelectedCategory(cat); setShowFavorites(false); }}
-          favoriteCount={favorites.size}
+          favoriteCount={favoritesLoaded ? favorites.size : undefined}
           showFavorites={showFavorites}
           onToggleFavorites={() => { setShowFavorites((prev) => !prev); setSelectedCategory(null); }}
         />
@@ -582,7 +621,7 @@ export default function Home() {
                       onSourceOpenInGraph={handleSourceOpenInGraph}
                       onFollowUp={handleFollowUp}
                       onNewChat={handleNewChat}
-                      getNoteById={getNoteById}
+                      getNoteById={getNoteByIdLocal}
                     />
                   )}
 
@@ -678,6 +717,7 @@ export default function Home() {
         highlightQuery={searchQuery}
         isFavorite={selectedNote ? isFavorite(selectedNote.id) : false}
         onToggleFavorite={toggleFavorite}
+        onNoteSaved={refreshNotes}
       />
 
       <SettingsDialog

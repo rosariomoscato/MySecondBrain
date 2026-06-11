@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Note } from "@/lib/types";
 import { Separator } from "@/components/ui/separator";
 import { marked } from "marked";
-import { FileText, Image, Paperclip, X, ChevronRight, Link2, Download, FileDown, FileType, Sparkles, FileSignature, ExternalLink as ExternalLinkIcon, Globe, Video, FileQuestion, Play, Star } from "lucide-react";
+import { FileText, Image, Paperclip, X, ChevronRight, Link2, Download, FileDown, FileType, Sparkles, FileSignature, ExternalLink as ExternalLinkIcon, Globe, Video, FileQuestion, Play, Star, Pencil, Save, RotateCcw } from "lucide-react";
 import { extractExternalLinks, parseVideoMeta, type ExternalLink, type ExternalLinkType } from "@/lib/utils";
 
 function exportAsMarkdown(note: Note) {
@@ -73,6 +73,7 @@ interface NoteSheetProps {
   highlightQuery?: string;
   isFavorite?: boolean;
   onToggleFavorite?: (noteId: string) => void;
+  onNoteSaved?: () => void;
 }
 
 function getFileIcon(filename: string) {
@@ -303,9 +304,13 @@ function SummaryCard({ summary, isStreaming, onDismiss }: { summary: string; isS
   );
 }
 
-export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbClick, onLinkClick, relatedNotes, highlightQuery, isFavorite = false, onToggleFavorite }: NoteSheetProps) {
+export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbClick, onLinkClick, relatedNotes, highlightQuery, isFavorite = false, onToggleFavorite, onNoteSaved }: NoteSheetProps) {
   const [summary, setSummary] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoadingContent, setIsLoadingContent] = useState(false);
 
   const externalLinks = useMemo(() => note ? extractExternalLinks(note.content) : [], [note?.id]);
 
@@ -323,6 +328,8 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
   useEffect(() => {
     setSummary("");
     setIsSummarizing(false);
+    setIsEditing(false);
+    setEditContent("");
   }, [note?.id]);
 
   const handleSummarize = async () => {
@@ -373,6 +380,57 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
     }
 
     setIsSummarizing(false);
+  };
+
+  const handleStartEdit = async () => {
+    if (!note) return;
+    setIsLoadingContent(true);
+    try {
+      const res = await fetch(`/api/note-content?filePath=${encodeURIComponent(note.filePath)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setEditContent(data.content);
+        setIsEditing(true);
+      } else {
+        setEditContent(note.content);
+        setIsEditing(true);
+      }
+    } catch {
+      setEditContent(note.content);
+      setIsEditing(true);
+    }
+    setIsLoadingContent(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditContent("");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!note || isSaving) return;
+    setIsSaving(true);
+
+    try {
+      const res = await fetch("/api/save-note", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ noteId: note.id, filePath: note.filePath, content: editContent }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setIsEditing(false);
+        setEditContent("");
+        onNoteSaved?.();
+      } else {
+        window.alert(data.error || "Errore nel salvataggio");
+      }
+    } catch {
+      window.alert("Errore di connessione durante il salvataggio");
+    }
+
+    setIsSaving(false);
   };
 
   return (
@@ -428,20 +486,61 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
                 >
                   <Star className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
                 </button>
-                <button
-                  onClick={handleSummarize}
-                  disabled={isSummarizing}
-                  className="h-8 px-2.5 inline-flex items-center justify-center gap-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
-                  title="Riassumi questa nota con AI"
-                >
-                  {isSummarizing ? (
-                    <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-                  ) : (
-                    <FileSignature className="h-4 w-4" />
-                  )}
-                  <span className="text-xs">Riassumi</span>
-                </button>
-                <ExportMenu note={note} />
+                {!isEditing && (
+                  <button
+                    onClick={handleStartEdit}
+                    disabled={isLoadingContent}
+                    className="h-8 px-2.5 inline-flex items-center justify-center gap-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                    title="Modifica nota"
+                  >
+                    {isLoadingContent ? (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : (
+                      <Pencil className="h-4 w-4" />
+                    )}
+                    <span className="text-xs">Modifica</span>
+                  </button>
+                )}
+                {isEditing && (
+                  <>
+                    <button
+                      onClick={handleSaveEdit}
+                      disabled={isSaving}
+                      className="h-8 px-2.5 inline-flex items-center justify-center gap-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 transition-colors disabled:opacity-40"
+                      title="Salva modifiche"
+                    >
+                      {isSaving ? (
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                      ) : (
+                        <Save className="h-4 w-4" />
+                      )}
+                      <span className="text-xs">{isSaving ? "Salvataggio..." : "Salva"}</span>
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      className="h-8 w-8 inline-flex items-center justify-center rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                      title="Annulla modifiche"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </button>
+                  </>
+                )}
+                {!isEditing && (
+                  <button
+                    onClick={handleSummarize}
+                    disabled={isSummarizing}
+                    className="h-8 px-2.5 inline-flex items-center justify-center gap-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors disabled:opacity-40"
+                    title="Riassumi questa nota con AI"
+                  >
+                    {isSummarizing ? (
+                      <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                    ) : (
+                      <FileSignature className="h-4 w-4" />
+                    )}
+                    <span className="text-xs">Riassumi</span>
+                  </button>
+                )}
+                {!isEditing && <ExportMenu note={note} />}
                 <button
                   onClick={() => onOpenChange(false)}
                   className="h-8 w-8 inline-flex items-center justify-center rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
@@ -482,9 +581,18 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
                     onDismiss={() => setSummary("")}
                   />
                 )}
-                <NoteContent content={note.content} onLinkClick={onLinkClick} highlightQuery={highlightQuery} />
+                {isEditing ? (
+                  <textarea
+                    value={editContent}
+                    onChange={(e) => setEditContent(e.target.value)}
+                    className="w-full min-h-[400px] bg-background/50 border border-border/50 rounded-xl p-4 text-sm leading-relaxed font-mono resize-y focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/20 transition-colors"
+                    spellCheck={false}
+                  />
+                ) : (
+                  <NoteContent content={note.content} onLinkClick={onLinkClick} highlightQuery={highlightQuery} />
+                )}
 
-                {externalLinks.length > 0 && (
+                {!isEditing && externalLinks.length > 0 && (
                   <>
                     <Separator className="my-4 opacity-20" />
                     <div className="space-y-2">
@@ -523,7 +631,7 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
                   </>
                 )}
 
-                {note.attachments.length > 0 && (
+                {!isEditing && note.attachments.length > 0 && (
                   <>
                     <Separator className="my-4 opacity-20" />
                     <div className="space-y-2">
@@ -549,7 +657,7 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
                   </>
                 )}
 
-                {relatedNotes.length > 0 && (
+                {!isEditing && relatedNotes.length > 0 && (
                   <>
                     <Separator className="my-4 opacity-20" />
                     <div className="space-y-3">

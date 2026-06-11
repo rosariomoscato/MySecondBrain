@@ -66,9 +66,11 @@ export function SidebarNav({
             >
               <Star className={`h-4 w-4 shrink-0 ${showFavorites ? "fill-current" : ""}`} />
               <span>Preferiti</span>
-              <Badge variant="secondary" className="ml-auto text-xs">
-                {favoriteCount}
-              </Badge>
+              {favoriteCount !== undefined && (
+                <Badge variant="secondary" className="ml-auto text-xs">
+                  {favoriteCount}
+                </Badge>
+              )}
             </button>
           )}
 

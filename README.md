@@ -1,6 +1,6 @@
 # My Second Brain — Guida Utente
 
-Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo con nodi per link esterni e filtri avanzati, ricerca full-text con tag, **ricerca semantica per significato**, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon.
+Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo con **drag & drop**, nodi per link esterni e filtri avanzati, ricerca full-text con tag, **ricerca semantica per significato**, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon, **preferiti/bookmark** e **editing inline delle note**.
 
 ---
 
@@ -13,6 +13,7 @@ Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza ar
   - [Interazioni](#interazioni)
   - [Filtrare per categoria](#filtrare-per-categoria)
   - [Filtri avanzati](#filtri-avanzati)
+  - [Drag & drop e layout](#drag--drop-e-layout)
 - [Ricerca](#ricerca)
   - [Ricerca testuale](#ricerca-testuale)
   - [Ricerca semantica](#ricerca-semantica)
@@ -20,6 +21,8 @@ Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza ar
   - [Sorgenti espandibili](#sorgenti-espandibili)
   - [Risorse esterne](#risorse-esterne)
 - [Visualizzare una nota](#visualizzare-una-nota)
+- [Preferiti/bookmark](#preferitibookmark)
+- [Modifica note](#modifica-note)
 - [Impostazioni](#impostazioni)
 - [Keyboard shortcuts](#keyboard-shortcuts)
 - [Statistiche](#statistiche)
@@ -57,7 +60,7 @@ L'interfaccia è composta da:
 
 | Elemento | Posizione | Descrizione |
 |----------|-----------|-------------|
-| **Sidebar** | Sinistra | Lista categorie con conteggio note. Clicca una categoria per filtrare. |
+| **Sidebar** | Sinistra | Lista categorie e preferiti con conteggio note. Clicca per filtrare. |
 | **Barra di ricerca** | Centro alto | Cerca tra le note o fai domande all'AI. |
 | **Tab Grafo** | Area principale | Visualizzazione grafo delle note. |
 | **Tab Risultati** | Area principale | Risultati di ricerca o risposta AI. |
@@ -99,9 +102,10 @@ Il grafo include tre tipi di nodi:
 - **Clicca** un nodo nota per aprirla nel pannello laterale
 - **Clicca** un nodo sito/video per aprirlo nel browser
 - **Passa il mouse** su un nodo per vedere un tooltip con dettagli (titolo, categoria, abstract per le note; dominio e URL per i link esterni)
-- **Trascina** i nodi per riorganizzare il grafo
+- **Trascina** i nodi per riorganizzare il grafo (le posizioni vengono salvate automaticamente)
 - **Scroll** per zoom in/out
 - **Clicca una categoria** nella sidebar per filtrare e mostrare solo le note di quella categoria
+- **Nota preferita** — le note preferite appaiono con un bordo dorato e una stellina ★ nel titolo
 
 ### Filtrare per categoria
 
@@ -120,6 +124,14 @@ Sopra il grafo trovi il pulsante **Filtri** che apre un pannello con controlli a
 | **Link esterni** | Filtra per note che citano o meno risorse web esterne (Tutti / Con / Senza) |
 
 I filtri si combinano tra loro e con il filtro per categoria. Il contatore delle note visibili si aggiorna in tempo reale. Usa **Reset** per ripristinare tutti i filtri.
+
+### Drag & drop e layout
+
+Il grafo supporta il **trascinamento manuale** dei nodi per riorganizzare il layout secondo le tue preferenze.
+
+- **Trascina i nodi** — clicca e trascina qualsiasi nodo per spostarlo. Le posizioni vengono salvate automaticamente al rilascio e ripristinate al prossimo caricamento della pagina
+- **Libero / Bloccato** — il pulsante "Libero" alterna tra layout libero (fisica attiva, i nodi si dispongono automaticamente) e layout bloccato (fisica disabilitata, i nodi restano fissi nelle posizioni salvate)
+- **Reset posizioni** — il pulsante ↺ cancella tutte le posizioni salvate e riorganizza il grafo da zero con la fisica automatica
 
 ---
 
@@ -225,6 +237,8 @@ Clicca una nota dal grafo, dai risultati di ricerca, o da una fonte AI per aprir
 
 | Pulsante | Descrizione |
 |----------|-------------|
+| **★ Preferito** | Aggiunge/rimuove la nota dai preferiti (stellina dorata quando attivo) |
+| **✏️ Modifica** | Apre l'editor inline per modificare il contenuto della nota |
 | **Riassumi** | Genera un riassunto AI della nota |
 | **Download ▾** | Esporta la nota come **Markdown** (.md) o **PDF** |
 
@@ -239,6 +253,43 @@ La sezione "Note correlate" suggerisce automaticamente note simili basandosi su:
 - Forward link (questa nota linka ad altre) — peso 3
 - Link condivisi (entrambe linkano alla stessa nota) — peso 2
 - Stessa categoria — peso 1
+
+---
+
+## Preferiti/bookmark
+
+Puoi segnare le tue note preferite e filtrarle rapidamente.
+
+### Aggiungere ai preferiti
+
+Apri una nota nel pannello laterale e clicca la **stellina** nell'header. La nota diventa preferita e nel grafo appare con un **bordo dorato** e una stellina ★ nel titolo.
+
+### Filtrare per preferiti
+
+Nella sidebar sinistra trovi la voce **"Preferiti"** (sotto "Tutte"). Cliccala per mostrare solo le note preferite nel grafo, nei risultati di ricerca e nelle statistiche. Un chip ambra appare sotto i tab per indicare il filtro attivo. Clicca la **X** sul chip per rimuovere il filtro.
+
+I preferiti vengono salvati nel browser (localStorage) e persistono tra una sessione e l'altra.
+
+---
+
+## Modifica note
+
+Puoi modificare direttamente il contenuto delle tue note dall'interfaccia. Le modifiche vengono salvate sul file `.md` originale.
+
+### Come modificare
+
+1. Apri una nota nel pannello laterale
+2. Clicca il pulsante **"Modifica"** nell'header
+3. Il contenuto viene caricato dal file originale in un editor di testo
+4. Modifica il contenuto (supporta markdown completo)
+5. Clicca **"Salva"** per salvare le modifiche sul file `.md` originale, oppure **↺** per annullare
+
+Dopo il salvataggio il grafo, la sidebar e i contenuti si aggiornano automaticamente. Il titolo e i link della nota vengono ricalcolati dal nuovo contenuto.
+
+### Nota bene
+
+- L'editor mostra il contenuto **grezzo** del file `.md` (incluso eventuale HTML o formattazione sorgente)
+- Le modifiche sono **immediate** sul file originale — non c'è undo dopo il salvataggio
 
 ---
 
@@ -392,16 +443,22 @@ MySecondBrain/
 │       ├── search/route.ts    ← Ricerca fuse.js
 │       ├── embed/route.ts     ← Ricerca semantica (embeddings)
 │       ├── summarize/route.ts ← Riassunto AI
+│       ├── save-note/route.ts ← Salvataggio modifica nota
+│       ├── note-content/route.ts ← Contenuto originale nota
+│       ├── notes/route.ts     ← API note aggiornate
 │       ├── rebuild/route.ts   ← Re-index
 │       └── settings/          ← API impostazioni
 ├── components/
 │   ├── settings-dialog.tsx    ← Dialog impostazioni
-│   ├── note-graph.tsx         ← Grafo vis-network
-│   ├── graph-filters.tsx      ← Filtri avanzati grafo
-│   ├── note-sheet.tsx         ← Pannello nota
+│   ├── note-graph.tsx         ← Grafo vis-network (drag & drop, preferiti)
+│   ├── graph-filters.tsx      ← Filtri avanzati grafo + controlli layout
+│   ├── note-sheet.tsx         ← Pannello nota (editing, preferiti, esportazione)
 │   ├── search-bar.tsx         ← Barra di ricerca
 │   ├── rag-answer.tsx         ← Chat AI + fonti
 │   └── ...                    ← Altri componenti UI
+├── hooks/
+│   ├── use-favorites.ts       ← Gestione preferiti (localStorage)
+│   └── use-search-history.ts  ← Cronologia ricerche
 ├── lib/
 │   ├── settings.ts            ← Gestione impostazioni
 │   ├── notes-loader.ts        ← Caricamento note
