@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, SlidersHorizontal, Link2, Paperclip, Calendar } from "lucide-react";
+import { X, SlidersHorizontal, Link2, Paperclip, Calendar, Lock, Unlock, RotateCcw } from "lucide-react";
 
 export interface GraphFiltersState {
   minLinks: number;
@@ -15,6 +15,9 @@ interface GraphFiltersProps {
   active: GraphFiltersState;
   onChange: (filters: GraphFiltersState) => void;
   maxLinks: number;
+  layoutLocked?: boolean;
+  onLayoutToggle?: () => void;
+  onResetPositions?: () => void;
 }
 
 const DEFAULT_FILTERS: GraphFiltersState = {
@@ -25,7 +28,7 @@ const DEFAULT_FILTERS: GraphFiltersState = {
 
 export { DEFAULT_FILTERS };
 
-export function GraphFilters({ active, onChange, maxLinks }: GraphFiltersProps) {
+export function GraphFilters({ active, onChange, maxLinks, layoutLocked = false, onLayoutToggle, onResetPositions }: GraphFiltersProps) {
   const [isOpen, setIsOpen] = useState(false);
 
   const isDefault =
@@ -57,6 +60,25 @@ export function GraphFilters({ active, onChange, maxLinks }: GraphFiltersProps) 
               {activeCount}
             </Badge>
           )}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onLayoutToggle}
+          className={`h-8 gap-1.5 text-xs ${layoutLocked ? "border-amber-500/50 text-amber-400 bg-amber-500/10" : ""}`}
+          title={layoutLocked ? "Sblocca layout (riattiva fisica)" : "Blocca layout (disattiva fisica)"}
+        >
+          {layoutLocked ? <Lock className="h-3.5 w-3.5" /> : <Unlock className="h-3.5 w-3.5" />}
+          {layoutLocked ? "Bloccato" : "Libero"}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onResetPositions}
+          className="h-8 gap-1.5 text-xs"
+          title="Resetta posizioni dei nodi"
+        >
+          <RotateCcw className="h-3.5 w-3.5" />
         </Button>
         {!isDefault && (
           <button

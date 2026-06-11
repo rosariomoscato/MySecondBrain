@@ -8,6 +8,8 @@ import { Note, CATEGORY_COLORS } from "@/lib/types";
 interface NoteGraphProps {
   notes: Note[];
   onNodeClick: (noteId: string) => void;
+  layoutLocked?: boolean;
+  onLayoutChange?: (locked: boolean) => void;
 }
 
 interface VisNode {
@@ -24,6 +26,9 @@ interface VisNode {
   margin?: { top: number; bottom: number; left: number; right: number };
   shadow?: { enabled: boolean; color: string; size: number };
   shapeProperties?: { borderRadius: number };
+  fixed?: { x: boolean; y: boolean };
+  x?: number;
+  y?: number;
 }
 
 interface VisEdge {
@@ -35,13 +40,40 @@ interface VisEdge {
   width?: number;
 }
 
-export interface NoteGraphHandle {
-  focusNode: (nodeId: string) => void;
+interface NodePosition {
+  x: number;
+  y: number;
 }
 
-export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function NoteGraph({ notes, onNodeClick }: NoteGraphProps, ref) {
+const POSITIONS_STORAGE_KEY = "msb-graph-positions";
+
+function loadSavedPositions(): Record<string, NodePosition> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = localStorage.getItem(POSITIONS_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+
+function savePositions(positions: Record<string, NodePosition>) {
+  try {
+    localStorage.setItem(POSITIONS_STORAGE_KEY, JSON.stringify(positions));
+  } catch {
+    // ignore storage errors
+  }
+}
+
+export interface NoteGraphHandle {
+  focusNode: (nodeId: string) => void;
+  resetPositions: () => void;
+}
+
+export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function NoteGraph({ notes, onNodeClick, layoutLocked = false, onLayoutChange }: NoteGraphProps, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const networkRef = useRef<unknown>(null);
+  const positionsRef = useRef<Record<string, NodePosition>>(loadSavedPositions());
   const { resolvedTheme } = useTheme();
   const [tooltip, setTooltip] = useState<{
     note: Note;
@@ -68,6 +100,7 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
       colorMap[cat] = { bg: color, border: color };
     }
 
+    const savedPositions = positionsRef.current;
     const visNodes: VisNode[] = [];
 
     visNodes.push({
@@ -84,12 +117,14 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
       size: 30,
       shape: "dot",
       borderWidth: 3,
+      ...(savedPositions["root"] ? { x: savedPositions["root"].x, y: savedPositions["root"].y, fixed: layoutLocked ? { x: true, y: true } : undefined } : {}),
     });
 
     for (const cat of categories) {
       const c = colorMap[cat] || { bg: "#95a5a6", border: "#95a5a6" };
+      const catId = `folder_${cat}`;
       visNodes.push({
-        id: `folder_${cat}`,
+        id: catId,
         label: `#${cat.replace(/_/g, " ")}`,
         group: cat,
         color: {
@@ -102,6 +137,7 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
         size: 22,
         shape: "dot",
         borderWidth: 2,
+        ...(savedPositions[catId] ? { x: savedPositions[catId].x, y: savedPositions[catId].y, fixed: layoutLocked ? { x: true, y: true } : undefined } : {}),
       });
     }
 
@@ -128,6 +164,7 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
         margin: { top: 8, bottom: 8, left: 10, right: 10 },
         shadow: { enabled: true, color: `${c.bg}40`, size: 8 },
         shapeProperties: { borderRadius: 20 },
+        ...(savedPositions[note.id] ? { x: savedPositions[note.id].x, y: savedPositions[note.id].y, fixed: layoutLocked ? { x: true, y: true } : undefined } : {}),
       });
     }
 
@@ -196,6 +233,7 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
         margin: { top: 4, bottom: 4, left: 4, right: 4 },
         shadow: { enabled: true, color: `${extColor}30`, size: 4 },
         shapeProperties: { borderRadius: isVideo ? 0 : 4 },
+        ...(savedPositions[id] ? { x: savedPositions[id].x, y: savedPositions[id].y, fixed: layoutLocked ? { x: true, y: true } : undefined } : {}),
       });
     }
     for (const note of notes) {
@@ -252,21 +290,25 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
         (networkRef.current as { destroy: () => void }).destroy();
       }
 
+      const hasSavedPositions = Object.keys(savedPositions).length > 0;
+
       const options = {
         physics: {
+          enabled: !layoutLocked,
           barnesHut: {
             gravitationalConstant: -12000,
             centralGravity: 0.2,
             springLength: 80,
             springConstant: 0.03,
           },
-          stabilization: { iterations: 250 },
+          stabilization: { iterations: layoutLocked ? 0 : 250 },
         },
         interaction: {
           hover: true,
           tooltipDelay: 200,
           navigationButtons: true,
           keyboard: true,
+          dragNodes: true,
         },
         nodes: {
           shadow: {
@@ -286,6 +328,40 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
         { nodes: visNodes, edges: visEdges },
         options
       );
+
+      if (hasSavedPositions) {
+        const applyPositions = () => {
+          const allNodeIds = visNodes.map((n) => n.id);
+          for (const nid of allNodeIds) {
+            if (savedPositions[nid]) {
+              network.moveNode(nid, savedPositions[nid].x, savedPositions[nid].y);
+            }
+          }
+        };
+
+        if (layoutLocked) {
+          network.once("afterDrawing", () => {
+            applyPositions();
+            network.redraw();
+          });
+        } else {
+          network.once("stabilized", applyPositions);
+        }
+      }
+
+      network.on("dragEnd", (params: { nodes: string[] }) => {
+        if (params.nodes.length > 0) {
+          const newPositions = { ...positionsRef.current };
+          for (const nodeId of params.nodes) {
+            const pos = network.getPositions([nodeId])[nodeId];
+            if (pos) {
+              newPositions[nodeId] = { x: pos.x, y: pos.y };
+            }
+          }
+          positionsRef.current = newPositions;
+          savePositions(newPositions);
+        }
+      });
 
       network.on("hoverNode", (params: { node: string }) => {
         const note = noteMap.get(params.node);
@@ -346,7 +422,7 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
 
       networkRef.current = network;
     });
-  }, [notes, onNodeClick, isDark]);
+  }, [notes, onNodeClick, isDark, layoutLocked]);
 
   useImperativeHandle(ref, () => ({
     focusNode: (nodeId: string) => {
@@ -356,7 +432,12 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
         network.selectNodes([nodeId]);
       }
     },
-  }), []);
+    resetPositions: () => {
+      positionsRef.current = {};
+      localStorage.removeItem(POSITIONS_STORAGE_KEY);
+      buildGraph();
+    },
+  }), [buildGraph]);
 
   useEffect(() => {
     buildGraph();

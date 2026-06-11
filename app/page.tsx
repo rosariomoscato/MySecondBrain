@@ -42,6 +42,7 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [graphFilters, setGraphFilters] = useState<GraphFiltersState>(DEFAULT_FILTERS);
+  const [layoutLocked, setLayoutLocked] = useState(false);
   const graphRef = useRef<NoteGraphHandle>(null);
   const { history: searchHistory, add: addHistory, remove: removeHistory, clear: clearHistory } = useSearchHistory();
 
@@ -516,13 +517,16 @@ export default function Home() {
                     active={graphFilters}
                     onChange={setGraphFilters}
                     maxLinks={maxLinksInNotes}
+                    layoutLocked={layoutLocked}
+                    onLayoutToggle={() => setLayoutLocked((prev) => !prev)}
+                    onResetPositions={() => graphRef.current?.resetPositions()}
                   />
                   <span className="text-[10px] text-muted-foreground/40">
                     {graphFilteredNotes.length} note
                   </span>
                 </div>
                 <div className="flex-1 min-h-0">
-                  <NoteGraph ref={graphRef} notes={graphFilteredNotes} onNodeClick={handleNoteClick} />
+                  <NoteGraph ref={graphRef} notes={graphFilteredNotes} onNodeClick={handleNoteClick} layoutLocked={layoutLocked} onLayoutChange={setLayoutLocked} />
                 </div>
               </div>
             </TabsContent>
