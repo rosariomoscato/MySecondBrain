@@ -20,6 +20,16 @@ const appDescription = process.env.NEXT_PUBLIC_APP_DESCRIPTION || "Esplora e cer
 export const metadata: Metadata = {
   title: appName,
   description: appDescription,
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icons/icon.svg",
+    apple: "/icons/icon-192.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: appName,
+  },
 };
 
 export default function RootLayout({
@@ -30,9 +40,15 @@ export default function RootLayout({
   return (
     <html lang="it" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <head>
+        <meta name="theme-color" content="#6366f1" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){var o=Node.prototype.removeChild;Node.prototype.removeChild=function(c){try{return o.call(this,c)}catch(e){if(e instanceof DOMException&&e.name==='NotFoundError')return c;throw e}}})()`,
+          }}
+        />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `if('serviceWorker'in navigator){navigator.serviceWorker.register('/sw.js').catch(function(){})}`,
           }}
         />
       </head>

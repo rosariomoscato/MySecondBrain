@@ -1,6 +1,6 @@
 # My Second Brain — Guida Utente
 
-Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo con **drag & drop**, nodi per link esterni e filtri avanzati, ricerca full-text con tag, **ricerca semantica per significato**, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon, **preferiti/bookmark** e **editing inline delle note**.
+Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza artificiale. Grafo interattivo con **drag & drop**, nodi per link esterni e filtri avanzati, ricerca full-text con tag, **ricerca semantica per significato**, Q&A AI con citazioni delle fonti, embed video YouTube/Vimeo, anteprime immagini e link esterni con favicon, **preferiti/bookmark**, **editing inline delle note** e **modalità offline/PWA**.
 
 ---
 
@@ -23,6 +23,7 @@ Esplora, cerca e interroga le tue note markdown con l'aiuto dell'intelligenza ar
 - [Visualizzare una nota](#visualizzare-una-nota)
 - [Preferiti/bookmark](#preferitibookmark)
 - [Modifica note](#modifica-note)
+- [Modalità offline/PWA](#modalita-offlinepwa)
 - [Impostazioni](#impostazioni)
 - [Keyboard shortcuts](#keyboard-shortcuts)
 - [Statistiche](#statistiche)
@@ -293,6 +294,40 @@ Dopo il salvataggio il grafo, la sidebar e i contenuti si aggiornano automaticam
 
 ---
 
+## Modalità offline/PWA
+
+My Second Brain è una **Progressive Web App (PWA)**: puoi installarla come applicazione desktop e usarla anche senza connessione internet.
+
+### Installare la PWA
+
+La PWA funziona solo in **produzione** (non in dev mode):
+
+```bash
+npm run build
+npm run start
+```
+
+1. Apri Chrome su http://localhost:3000
+2. Guarda nella **barra degli indirizzi** — appare un'icona di installazione (monitor con freccia)
+3. Cliccala, oppure vai sui **tre puntini** → "Installa My Second Brain"
+4. L'app si apre in una finestra separata, senza barra degli indirizzi
+5. Da quel momento trovi un **tile nel menu Start** e un **collegamento sul desktop**
+
+### Funzionamento offline
+
+L'app usa un **Service Worker** che memorizza in cache i contenuti visitati:
+
+- **Note, grafo e allegati** — disponibili offline dopo la prima visita
+- **Ricerca testuale** — funziona sui dati in cache
+- **Funzioni AI** (ricerca semantica, Q&A, riassunti) — richiedono connessione
+- **Modifica note** — richiede il server attivo per il salvataggio
+
+### Importante
+
+Il server Next.js deve essere **in esecuzione** per le funzioni che richiedono il backend (AI, salvataggio, re-indicizzazione). La PWA è un'interfaccia nativa-like che funziona offline per la consultazione, ma per il pieno funzionamento serve che `npm run start` giri in background.
+
+---
+
 ## Impostazioni
 
 Clicca l'icona ⚙️ nell'header per aprire il dialog delle impostazioni, diviso in due tab.
@@ -471,8 +506,11 @@ MySecondBrain/
 │   ├── notes.json             ← Note indicizzate (generato)
 │   ├── embeddings.json        ← Embeddings per ricerca semantica (generato)
 │   └── settings.json          ← Impostazioni utente (generato)
-└── public/
-    └── files/                 ← Allegati copiati dal build (generato)
+├── public/
+│   ├── files/                 ← Allegati copiati dal build (generato)
+│   ├── manifest.json          ← Manifest PWA
+│   ├── sw.js                  ← Service Worker (caching offline)
+│   └── icons/                 ← Icone PWA (SVG, 192px, 512px)
 ```
 
 ---

@@ -26,4 +26,4 @@ Leggimi prima di ogni sessione per decidere cosa implementare.
 - [x] **Drag & drop note** — permettere di riordinare o raggruppare note nel grafo manualmente
 - [x] **Preferiti/bookmark** — segnare note preferite e filtrarle rapidamente
 - [x] **Modifica note** — permettere editing inline delle note con salvataggio sul file `.md` originale
-- [ ] **Modalita offline/PWA** — trasformare l'app in PWA per uso offline dei propri appunti
+- [x] **Modalita offline/PWA** — trasformare l'app in PWA per uso offline dei propri appunti
