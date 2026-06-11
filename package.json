@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npx tsx scripts/build-notes.ts && next dev",
+    "dev": "npx tsx scripts/build-notes.ts && next dev --webpack",
     "build": "npx tsx scripts/build-notes.ts && next build",
     "prebuild": "npx tsx scripts/build-notes.ts",
     "start": "next start",

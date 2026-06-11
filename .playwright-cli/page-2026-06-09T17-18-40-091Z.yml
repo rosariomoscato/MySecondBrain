@@ -1,0 +1,90 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - heading "My Second Brain" [level=2] [ref=e5]:
+        - img [ref=e7]
+        - generic [ref=e16]: My Second Brain
+      - generic [ref=e17]:
+        - generic [ref=e19]:
+          - img [ref=e21]
+          - generic [ref=e25]: 37 note
+        - separator [ref=e26]
+        - generic [ref=e28]:
+          - button "Tutte 37" [ref=e29]:
+            - img [ref=e30]
+            - generic [ref=e33]: Tutte
+            - generic [ref=e34]: "37"
+          - button "Estratti 10" [ref=e35]:
+            - generic [ref=e37]: Estratti
+            - generic [ref=e38]: "10"
+          - button "Immagini Foto 1" [ref=e39]:
+            - generic [ref=e41]: Immagini Foto
+            - generic [ref=e42]: "1"
+          - button "PROMPTING 5" [ref=e43]:
+            - generic [ref=e45]: PROMPTING
+            - generic [ref=e46]: "5"
+          - button "Riflessioni 5" [ref=e47]:
+            - generic [ref=e49]: Riflessioni
+            - generic [ref=e50]: "5"
+          - button "AI Ethics 4" [ref=e51]:
+            - generic [ref=e53]: AI Ethics
+            - generic [ref=e54]: "4"
+          - button "Intelligenza Artificiale 12" [ref=e55]:
+            - generic [ref=e57]: Intelligenza Artificiale
+            - generic [ref=e58]: "12"
+        - separator [ref=e59]
+        - generic [ref=e61]:
+          - img [ref=e62]
+          - paragraph [ref=e64]: My Second Brain
+    - main [ref=e65]:
+      - generic [ref=e66]:
+        - generic [ref=e68]:
+          - generic [ref=e69]:
+            - img [ref=e70]
+            - textbox "Cerca nelle tue note..." [ref=e73]
+          - button "Ricerca testuale" [ref=e74]:
+            - img [ref=e75]
+          - button "Chiedi all'AI" [ref=e78]:
+            - img [ref=e79]
+          - button "Ricerca semantica" [ref=e82]:
+            - img [ref=e83]
+          - button "Cerca" [disabled]:
+            - generic:
+              - img
+              - text: Cerca
+        - button "Genera embeddings (ricerca semantica)" [ref=e91]:
+          - img [ref=e92]
+        - button "Aggiorna note (re-indicizza)" [ref=e100]:
+          - img [ref=e101]
+        - button "Impostazioni" [ref=e106]:
+          - img [ref=e107]
+        - button "Guida utente" [ref=e110]:
+          - img [ref=e111]
+        - button [ref=e113]:
+          - img [ref=e114]
+      - generic [ref=e117]:
+        - tablist [ref=e119]:
+          - tab "Grafo" [selected] [ref=e120]:
+            - img
+            - text: Grafo
+          - tab "Risultati" [ref=e121]
+          - tab "Statistiche" [ref=e122]:
+            - img
+            - text: Statistiche
+          - tab "Docs" [ref=e123]:
+            - img
+            - text: Docs
+        - tabpanel "Grafo" [ref=e124]:
+          - generic [ref=e126]:
+            - button "Filtri" [ref=e129]:
+              - img
+              - text: Filtri
+            - generic [ref=e130]: 37 note
+    - contentinfo [ref=e134]:
+      - paragraph [ref=e135]:
+        - text: © 2026, All rights reserved —
+        - link "Rosario Moscato" [ref=e136] [cursor=pointer]:
+          - /url: https://rosmoscato.xyz
+  - button "Open Next.js Dev Tools" [ref=e142] [cursor=pointer]:
+    - img [ref=e143]
+  - alert [ref=e146]
