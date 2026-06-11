@@ -3,13 +3,16 @@
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { BookOpen, Hash, Sparkles } from "lucide-react";
+import { BookOpen, Hash, Sparkles, Star } from "lucide-react";
 
 interface SidebarNavProps {
   categories: { name: string; count: number; color: string }[];
   totalNotes: number;
   selectedCategory: string | null;
   onCategoryClick: (category: string | null) => void;
+  favoriteCount?: number;
+  showFavorites?: boolean;
+  onToggleFavorites?: () => void;
 }
 
 export function SidebarNav({
@@ -17,6 +20,9 @@ export function SidebarNav({
   totalNotes,
   selectedCategory,
   onCategoryClick,
+  favoriteCount = 0,
+  showFavorites = false,
+  onToggleFavorites,
 }: SidebarNavProps) {
   return (
     <div className="flex flex-col h-full">
@@ -48,6 +54,23 @@ export function SidebarNav({
               {totalNotes}
             </Badge>
           </button>
+
+          {onToggleFavorites && (
+            <button
+              onClick={onToggleFavorites}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all duration-200 ${
+                showFavorites
+                  ? "bg-amber-500/15 text-amber-400 shadow-sm"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              }`}
+            >
+              <Star className={`h-4 w-4 shrink-0 ${showFavorites ? "fill-current" : ""}`} />
+              <span>Preferiti</span>
+              <Badge variant="secondary" className="ml-auto text-xs">
+                {favoriteCount}
+              </Badge>
+            </button>
+          )}
 
           {categories.map((cat) => (
             <button

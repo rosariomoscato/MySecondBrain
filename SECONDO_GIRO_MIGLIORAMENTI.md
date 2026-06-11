@@ -24,6 +24,6 @@ Leggimi prima di ogni sessione per decidere cosa implementare.
 ## UX
 
 - [x] **Drag & drop note** — permettere di riordinare o raggruppare note nel grafo manualmente
-- [ ] **Preferiti/bookmark** — segnare note preferite e filtrarle rapidamente
+- [x] **Preferiti/bookmark** — segnare note preferite e filtrarle rapidamente
 - [ ] **Modifica note** — permettere editing inline delle note con salvataggio sul file `.md` originale
 - [ ] **Modalita offline/PWA** — trasformare l'app in PWA per uso offline dei propri appunti

@@ -20,6 +20,7 @@ import { SettingsDialog } from "@/components/settings-dialog";
 import { DocsViewer } from "@/components/docs-viewer";
 import { GraphFilters, DEFAULT_FILTERS, type GraphFiltersState } from "@/components/graph-filters";
 import { useSearchHistory } from "@/hooks/use-search-history";
+import { useFavorites } from "@/hooks/use-favorites";
 
 const allNotes = loadNotes();
 const categories = getCategories();
@@ -43,12 +44,16 @@ export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [graphFilters, setGraphFilters] = useState<GraphFiltersState>(DEFAULT_FILTERS);
   const [layoutLocked, setLayoutLocked] = useState(false);
+  const [showFavorites, setShowFavorites] = useState(false);
   const graphRef = useRef<NoteGraphHandle>(null);
   const { history: searchHistory, add: addHistory, remove: removeHistory, clear: clearHistory } = useSearchHistory();
+  const { favorites, toggle: toggleFavorite, isFavorite } = useFavorites();
 
-  const filteredNotes = selectedCategory
-    ? allNotes.filter((n) => n.category === selectedCategory)
-    : allNotes;
+  const filteredNotes = showFavorites
+    ? allNotes.filter((n) => favorites.has(n.id))
+    : selectedCategory
+      ? allNotes.filter((n) => n.category === selectedCategory)
+      : allNotes;
 
   const filteredSearchResults = selectedCategory
     ? searchResults.filter((r) => r.item.category === selectedCategory)
@@ -410,7 +415,10 @@ export default function Home() {
           categories={categories}
           totalNotes={allNotes.length}
           selectedCategory={selectedCategory}
-          onCategoryClick={setSelectedCategory}
+          onCategoryClick={(cat) => { setSelectedCategory(cat); setShowFavorites(false); }}
+          favoriteCount={favorites.size}
+          showFavorites={showFavorites}
+          onToggleFavorites={() => { setShowFavorites((prev) => !prev); setSelectedCategory(null); }}
         />
       </aside>
 
@@ -491,7 +499,7 @@ export default function Home() {
                 </TabsTrigger>
               </TabsList>
 
-              {selectedCategory && activeCategoryColor && (
+              {(selectedCategory && activeCategoryColor) && (
                 <div className="flex items-center gap-2 pt-2">
                   <span className="text-xs text-muted-foreground/60">Filtro:</span>
                   <button
@@ -504,6 +512,18 @@ export default function Home() {
                     }}
                   >
                     {selectedCategory.replace(/_/g, " ")}
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              )}
+              {showFavorites && (
+                <div className="flex items-center gap-2 pt-2">
+                  <span className="text-xs text-muted-foreground/60">Filtro:</span>
+                  <button
+                    onClick={() => setShowFavorites(false)}
+                    className="inline-flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border border-amber-500/50 text-amber-400 bg-amber-500/10 transition-all duration-200 hover:opacity-80"
+                  >
+                    Preferiti
                     <X className="h-3 w-3" />
                   </button>
                 </div>
@@ -526,7 +546,7 @@ export default function Home() {
                   </span>
                 </div>
                 <div className="flex-1 min-h-0">
-                  <NoteGraph ref={graphRef} notes={graphFilteredNotes} onNodeClick={handleNoteClick} layoutLocked={layoutLocked} onLayoutChange={setLayoutLocked} />
+                  <NoteGraph ref={graphRef} notes={graphFilteredNotes} onNodeClick={handleNoteClick} layoutLocked={layoutLocked} onLayoutChange={setLayoutLocked} favoriteIds={favorites} />
                 </div>
               </div>
             </TabsContent>
@@ -656,6 +676,8 @@ export default function Home() {
         onLinkClick={handleLinkClick}
         relatedNotes={relatedNotes}
         highlightQuery={searchQuery}
+        isFavorite={selectedNote ? isFavorite(selectedNote.id) : false}
+        onToggleFavorite={toggleFavorite}
       />
 
       <SettingsDialog

@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { Note } from "@/lib/types";
 import { Separator } from "@/components/ui/separator";
 import { marked } from "marked";
-import { FileText, Image, Paperclip, X, ChevronRight, Link2, Download, FileDown, FileType, Sparkles, FileSignature, ExternalLink as ExternalLinkIcon, Globe, Video, FileQuestion, Play } from "lucide-react";
+import { FileText, Image, Paperclip, X, ChevronRight, Link2, Download, FileDown, FileType, Sparkles, FileSignature, ExternalLink as ExternalLinkIcon, Globe, Video, FileQuestion, Play, Star } from "lucide-react";
 import { extractExternalLinks, parseVideoMeta, type ExternalLink, type ExternalLinkType } from "@/lib/utils";
 
 function exportAsMarkdown(note: Note) {
@@ -71,6 +71,8 @@ interface NoteSheetProps {
   onLinkClick: (linkTitle: string) => void;
   relatedNotes: Note[];
   highlightQuery?: string;
+  isFavorite?: boolean;
+  onToggleFavorite?: (noteId: string) => void;
 }
 
 function getFileIcon(filename: string) {
@@ -301,7 +303,7 @@ function SummaryCard({ summary, isStreaming, onDismiss }: { summary: string; isS
   );
 }
 
-export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbClick, onLinkClick, relatedNotes, highlightQuery }: NoteSheetProps) {
+export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbClick, onLinkClick, relatedNotes, highlightQuery, isFavorite = false, onToggleFavorite }: NoteSheetProps) {
   const [summary, setSummary] = useState("");
   const [isSummarizing, setIsSummarizing] = useState(false);
 
@@ -419,6 +421,13 @@ export function NoteSheet({ note, open, onOpenChange, noteHistory, onBreadcrumbC
                 )}
               </div>
               <div className="flex items-center gap-1 shrink-0">
+                <button
+                  onClick={() => note && onToggleFavorite?.(note.id)}
+                  className={`h-8 w-8 inline-flex items-center justify-center rounded-lg transition-colors ${isFavorite ? "text-amber-400 hover:text-amber-300" : "text-muted-foreground hover:text-foreground"}`}
+                  title={isFavorite ? "Rimuovi dai preferiti" : "Aggiungi ai preferiti"}
+                >
+                  <Star className={`h-4 w-4 ${isFavorite ? "fill-current" : ""}`} />
+                </button>
                 <button
                   onClick={handleSummarize}
                   disabled={isSummarizing}

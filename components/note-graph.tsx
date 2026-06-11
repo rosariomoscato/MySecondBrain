@@ -10,6 +10,7 @@ interface NoteGraphProps {
   onNodeClick: (noteId: string) => void;
   layoutLocked?: boolean;
   onLayoutChange?: (locked: boolean) => void;
+  favoriteIds?: Set<string>;
 }
 
 interface VisNode {
@@ -70,7 +71,7 @@ export interface NoteGraphHandle {
   resetPositions: () => void;
 }
 
-export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function NoteGraph({ notes, onNodeClick, layoutLocked = false, onLayoutChange }: NoteGraphProps, ref) {
+export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function NoteGraph({ notes, onNodeClick, layoutLocked = false, onLayoutChange, favoriteIds }: NoteGraphProps, ref) {
   const containerRef = useRef<HTMLDivElement>(null);
   const networkRef = useRef<unknown>(null);
   const positionsRef = useRef<Record<string, NodePosition>>(loadSavedPositions());
@@ -146,23 +147,25 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
       const preview = note.content.slice(0, 80).replace(/\n/g, " ");
       const bgColor = isDark ? "#111827" : "#f8fafc";
       const borderColor = c.bg;
+      const isFav = favoriteIds?.has(note.id);
+      const titlePrefix = isFav ? "\u2605 " : "";
       visNodes.push({
         id: note.id,
-        label: `${note.title}\n─────────────\n${preview}...`,
+        label: `${titlePrefix}${note.title}\n─────────────\n${preview}...`,
         group: note.category,
         color: {
           background: bgColor,
-          border: borderColor,
+          border: isFav ? "#f59e0b" : borderColor,
           highlight: { background: bgColor, border: "#fff" },
           hover: { background: isDark ? "#1e293b" : "#e2e8f0", border: "#fff" },
         },
         font: { size: 10, color: isDark ? "#ccc" : "#2d2d3f", align: "left", multi: true },
         size: 12,
         shape: "box",
-        borderWidth: 2,
+        borderWidth: isFav ? 3 : 2,
         widthConstraint: { maximum: 180 },
         margin: { top: 8, bottom: 8, left: 10, right: 10 },
-        shadow: { enabled: true, color: `${c.bg}40`, size: 8 },
+        shadow: { enabled: true, color: isFav ? "#f59e0b40" : `${c.bg}40`, size: isFav ? 12 : 8 },
         shapeProperties: { borderRadius: 20 },
         ...(savedPositions[note.id] ? { x: savedPositions[note.id].x, y: savedPositions[note.id].y, fixed: layoutLocked ? { x: true, y: true } : undefined } : {}),
       });
@@ -422,7 +425,7 @@ export const NoteGraph = forwardRef<NoteGraphHandle, NoteGraphProps>(function No
 
       networkRef.current = network;
     });
-  }, [notes, onNodeClick, isDark, layoutLocked]);
+  }, [notes, onNodeClick, isDark, layoutLocked, favoriteIds]);
 
   useImperativeHandle(ref, () => ({
     focusNode: (nodeId: string) => {
